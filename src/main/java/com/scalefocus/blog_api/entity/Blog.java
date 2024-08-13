@@ -1,19 +1,18 @@
 package com.scalefocus.blog_api.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.util.HashSet;
 import java.util.Set;
 
 @Entity
+@Table(name = "BLOG")
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
 @Setter
+@Builder
 public class Blog {
 
     @Id
@@ -24,7 +23,7 @@ public class Blog {
 
     private String text;
 
-    @ManyToMany(cascade =CascadeType.ALL,fetch = FetchType.LAZY)
+    @ManyToMany(cascade = { CascadeType.PERSIST, CascadeType.MERGE})
     @JoinTable(name = "blog_tags",
             joinColumns ={ @JoinColumn(name = "blog_id", referencedColumnName = "id")},
             inverseJoinColumns = {@JoinColumn(name = "tag_id", referencedColumnName = "id")}

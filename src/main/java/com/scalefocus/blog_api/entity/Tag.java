@@ -7,10 +7,12 @@ import java.util.HashSet;
 import java.util.Set;
 
 @Entity
+@Table(name = "TAG")
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
 @Setter
+@Builder
 public class Tag {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -18,6 +20,6 @@ public class Tag {
 
     private String name;
 
-    @ManyToMany(mappedBy = "tags", fetch = FetchType.LAZY)
+    @ManyToMany(mappedBy = "tags")
     private Set<Blog> blogs = new HashSet<>();
 }

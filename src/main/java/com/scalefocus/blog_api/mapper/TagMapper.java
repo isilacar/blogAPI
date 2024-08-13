@@ -2,28 +2,35 @@ package com.scalefocus.blog_api.mapper;
 
 import com.scalefocus.blog_api.dto.TagDto;
 import com.scalefocus.blog_api.entity.Tag;
+import org.springframework.stereotype.Component;
 
 import java.util.Set;
 import java.util.stream.Collectors;
 
+@Component
 public class TagMapper {
 
-    public static Tag mapToTag(TagDto tagDto) {
-        Tag tag = new Tag();
-        tag.setId(tagDto.id());
-        tag.setName(tagDto.name());
-
-        return tag;
-    }
-
-    public static TagDto mapToTagDto(Tag tag) {
-       return new TagDto(tag.getId(), tag.getName());
+    public Tag mapToTag(TagDto tagDto) {
+        return Tag.builder()
+                .id(tagDto.id())
+                .name(tagDto.name())
+                .build();
 
     }
-    public static Set<TagDto> mapToTagDtoList(Set<Tag> tags) {
-        return tags.stream().map(TagMapper::mapToTagDto).collect(Collectors.toSet());
+
+    public TagDto mapToTagDto(Tag tag) {
+        return TagDto.builder()
+                .id(tag.getId())
+                .name(tag.getName())
+                .build();
+
     }
-    public static Set<Tag> mapToTagList(Set<TagDto> tagDtos) {
-        return tagDtos.stream().map(TagMapper::mapToTag).collect(Collectors.toSet());
+
+    public Set<TagDto> mapToTagDtoList(Set<Tag> tags) {
+        return tags.stream().map(this::mapToTagDto).collect(Collectors.toSet());
+    }
+
+    public Set<Tag> mapToTagList(Set<TagDto> tagDtos) {
+        return tagDtos.stream().map(this::mapToTag).collect(Collectors.toSet());
     }
 }

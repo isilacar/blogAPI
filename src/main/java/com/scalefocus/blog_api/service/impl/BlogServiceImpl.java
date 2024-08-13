@@ -14,11 +14,12 @@ import org.springframework.stereotype.Service;
 public class BlogServiceImpl implements BlogService {
 
     private final BlogRepository blogRepository;
+    private final BlogMapper blogMapper;
 
     @Override
     public BlogDto createBlog(BlogDto blogDto) {
-        Blog savedBlog = blogRepository.save(BlogMapper.mapToBlog(blogDto));
-        return BlogMapper.mapToBlogDto(savedBlog);
+        Blog savedBlog = blogRepository.save(blogMapper.mapToBlog(blogDto));
+        return blogMapper.mapToBlogDto(savedBlog);
     }
 
 

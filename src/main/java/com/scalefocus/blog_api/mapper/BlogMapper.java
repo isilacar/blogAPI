@@ -3,29 +3,31 @@ package com.scalefocus.blog_api.mapper;
 
 import com.scalefocus.blog_api.dto.BlogDto;
 import com.scalefocus.blog_api.entity.Blog;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
 
+@Component
+@RequiredArgsConstructor
 public class BlogMapper {
 
-    public static BlogDto mapToBlogDto(Blog blog) {
+    private final TagMapper tagMapper;
 
-        return new BlogDto(
-                blog.getId(),
-                blog.getTitle(),
-                blog.getText(),
-                TagMapper.mapToTagDtoList(blog.getTags())
-
-        );
+    public BlogDto mapToBlogDto(Blog blog) {
+        return BlogDto.builder()
+                .id(blog.getId())
+                .title(blog.getTitle())
+                .text(blog.getText())
+                .tagDtoSet(tagMapper.mapToTagDtoList(blog.getTags()))
+                .build();
     }
 
-    public static Blog mapToBlog(BlogDto blogDto) {
-        Blog blog = new Blog();
-        blog.setId(blogDto.id());
-        blog.setTitle(blogDto.title());
-        blog.setText(blogDto.text());
-        blog.setTags(TagMapper.mapToTagList(blogDto.tagDtoSet()));
-        return blog;
+    public Blog mapToBlog(BlogDto blogDto) {
+       return Blog.builder().id(blogDto.id())
+                .title(blogDto.title())
+                .text(blogDto.text())
+                .tags(tagMapper.mapToTagList(blogDto.tagDtoSet()))
+                .build();
+
     }
-
-
 
 }
