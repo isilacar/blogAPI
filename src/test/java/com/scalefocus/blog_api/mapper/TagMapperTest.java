@@ -2,18 +2,15 @@ package com.scalefocus.blog_api.mapper;
 
 import com.scalefocus.blog_api.dto.TagDto;
 import com.scalefocus.blog_api.entity.Tag;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.MockitoAnnotations;
-import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Set;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
-@ExtendWith(MockitoExtension.class)
 public class TagMapperTest {
 
     private Tag tag;
@@ -24,7 +21,7 @@ public class TagMapperTest {
     @InjectMocks
     private TagMapper tagMapper;
 
-    @Before
+    @BeforeEach
     public void setup() {
         MockitoAnnotations.openMocks(this);
 
