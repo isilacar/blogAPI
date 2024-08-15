@@ -5,6 +5,7 @@ import com.scalefocus.blog_api.dto.BlogDto;
 import com.scalefocus.blog_api.entity.Blog;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
+import java.util.List;
 
 @Component
 @RequiredArgsConstructor
@@ -28,6 +29,9 @@ public class BlogMapper {
                 .tags(tagMapper.mapToTagList(blogDto.tagDtoSet()))
                 .build();
 
+    }
+    public List<BlogDto> mapToBlogDtoList(List<Blog> blogs) {
+        return blogs.stream().map(this::mapToBlogDto).toList();
     }
 
 }

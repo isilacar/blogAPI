@@ -12,10 +12,12 @@ import org.mockito.MockitoAnnotations;
 import uk.co.jemos.podam.api.PodamFactory;
 import uk.co.jemos.podam.api.PodamFactoryImpl;
 
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.anySet;
 import static org.mockito.Mockito.doReturn;
 
@@ -31,7 +33,7 @@ public class BlogMapperTest {
     private BlogDto blogDto;
     private Set<Tag> tags;
     private Set<TagDto> tagDtoSet;
-
+    private List<Blog> blogList;
 
     @BeforeEach
     public void setUp() {
@@ -44,6 +46,7 @@ public class BlogMapperTest {
                 .map(tag -> new TagDto(tag.getId(), tag.getName()))
                 .collect(Collectors.toSet());
 
+        blogList=List.of(blog);
 
         blogDto = BlogDto.builder()
                 .id(blog.getId())
@@ -78,4 +81,15 @@ public class BlogMapperTest {
         assertThat(returnedBlog.getId()).isEqualTo(blog.getId());
         assertThat(returnedBlog.getTags()).isEqualTo(blog.getTags());
     }
+
+    @Test
+    public void testMapToBlogDtoList(){
+        List<BlogDto> blogDtoList = blogMapper.mapToBlogDtoList(blogList);
+
+        assertThat(blogDtoList).isNotNull();
+        assertEquals(blogDtoList.size(),blogList.size());
+        assertEquals(blogDtoList.get(0).id(),blogList.get(0).getId());
+
+    }
+
 }
