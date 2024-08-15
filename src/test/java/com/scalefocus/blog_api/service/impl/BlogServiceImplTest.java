@@ -12,8 +12,12 @@ import org.mockito.MockitoAnnotations;
 import uk.co.jemos.podam.api.PodamFactory;
 import uk.co.jemos.podam.api.PodamFactoryImpl;
 
+import java.util.List;
+
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.doReturn;
 
 public class BlogServiceImplTest {
@@ -29,6 +33,9 @@ public class BlogServiceImplTest {
 
     private Blog blog;
     private BlogDto blogDto;
+    private List<Blog> blogList;
+    private List<BlogDto> blogDtoList;
+
 
     @BeforeEach
     public void setUp() {
@@ -36,15 +43,19 @@ public class BlogServiceImplTest {
         PodamFactory podamFactory = new PodamFactoryImpl();
 
         blog = podamFactory.manufacturePojo(Blog.class);
+        blogList = List.of(blog);
 
         blogDto = BlogDto.builder()
                 .id(blog.getId())
                 .title(blog.getTitle())
                 .text(blog.getText())
                 .build();
+        blogDtoList = List.of(blogDto);
 
         doReturn(blog).when(blogMapper).mapToBlog(any(BlogDto.class));
         doReturn(blogDto).when(blogMapper).mapToBlogDto(any(Blog.class));
+        doReturn(blogDtoList).when(blogMapper).mapToBlogDtoList(anyList());
+
 
     }
 
@@ -56,6 +67,18 @@ public class BlogServiceImplTest {
 
         assertThat(savedBlog).isNotNull();
         assertThat(savedBlog.id()).isEqualTo(blog.getId());
+
+    }
+
+    @Test
+    public void testGettingAllBlogs() {
+        doReturn(blogList).when(blogRepository).findAll();
+
+        List<BlogDto> allBlogs = blogServiceImpl.getAllBlogs();
+
+        assertThat(allBlogs).isNotNull();
+        assertEquals(allBlogs.size(), blogList.size());
+
 
     }
 }

@@ -12,7 +12,10 @@ import org.springframework.http.ResponseEntity;
 import uk.co.jemos.podam.api.PodamFactory;
 import uk.co.jemos.podam.api.PodamFactoryImpl;
 
+import java.util.List;
+
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 
@@ -25,6 +28,7 @@ public class BlogControllerTest {
     private BlogController blogController;
 
     private BlogDto blogDto;
+    private List<BlogDto> blogDtoList;
 
     @BeforeEach
     public void setUp() {
@@ -32,8 +36,10 @@ public class BlogControllerTest {
         PodamFactory podamFactory = new PodamFactoryImpl();
 
         blogDto = podamFactory.manufacturePojo(BlogDto.class);
+        blogDtoList=List.of(blogDto);
 
         doReturn(blogDto).when(blogService).createBlog(any(BlogDto.class));
+        doReturn(blogDtoList).when(blogService).getAllBlogs();
 
     }
 
@@ -45,4 +51,14 @@ public class BlogControllerTest {
         assertThat(blogDtoResponseEntity.getStatusCode()).isEqualTo(HttpStatusCode.valueOf(201));
         assertThat(blogDtoResponseEntity.getBody().id()).isEqualTo(blogDto.id());
     }
+
+    @Test
+    public void testGettingAllBlogs(){
+        ResponseEntity<List<BlogDto>> allBlogs = blogController.getAllBlogs();
+
+        assertThat(allBlogs.getBody()).isNotNull();
+        assertEquals(allBlogs.getStatusCode(), HttpStatusCode.valueOf(200));
+
+    }
+
 }
