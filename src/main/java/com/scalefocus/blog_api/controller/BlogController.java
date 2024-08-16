@@ -2,6 +2,7 @@ package com.scalefocus.blog_api.controller;
 
 
 import com.scalefocus.blog_api.dto.BlogDto;
+import com.scalefocus.blog_api.request.BlogUpdateRequest;
 import com.scalefocus.blog_api.service.BlogService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -27,6 +28,12 @@ public class BlogController {
     @GetMapping
     public ResponseEntity<List<BlogDto>> getAllBlogs(){
         return new ResponseEntity<>(blogService.getAllBlogs(),HttpStatus.OK);
+    }
+
+    @PutMapping("/{blogId}")
+    public ResponseEntity<BlogDto> updateBlog(@PathVariable Long blogId,
+                                              @RequestBody BlogUpdateRequest blogUpdateRequest){
+        return new ResponseEntity<>(blogService.updateBlog(blogId, blogUpdateRequest), HttpStatus.OK);
     }
 }
 
