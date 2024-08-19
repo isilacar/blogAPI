@@ -2,8 +2,10 @@ package com.scalefocus.blog_api.service.impl;
 
 import com.scalefocus.blog_api.dto.BlogDto;
 import com.scalefocus.blog_api.entity.Blog;
+import com.scalefocus.blog_api.exception.ResourceNotFound;
 import com.scalefocus.blog_api.mapper.BlogMapper;
 import com.scalefocus.blog_api.repository.BlogRepository;
+import com.scalefocus.blog_api.request.BlogUpdateRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -13,14 +15,18 @@ import uk.co.jemos.podam.api.PodamFactory;
 import uk.co.jemos.podam.api.PodamFactoryImpl;
 
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyList;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.doReturn;
 
 public class BlogServiceImplTest {
+
+    public static final long BLOG_ID = 1L;
+    public static final String ERROR_MESSAGE = "Blog does not exist with id: " + BLOG_ID;
 
     @Mock
     private BlogRepository blogRepository;
@@ -35,7 +41,8 @@ public class BlogServiceImplTest {
     private BlogDto blogDto;
     private List<Blog> blogList;
     private List<BlogDto> blogDtoList;
-
+    private BlogUpdateRequest blogUpdateRequest;
+    private ResourceNotFound resourceNotFound;
 
     @BeforeEach
     public void setUp() {
@@ -51,6 +58,8 @@ public class BlogServiceImplTest {
                 .text(blog.getText())
                 .build();
         blogDtoList = List.of(blogDto);
+
+        blogUpdateRequest = new BlogUpdateRequest("updated title", "updated text");
 
         doReturn(blog).when(blogMapper).mapToBlog(any(BlogDto.class));
         doReturn(blogDto).when(blogMapper).mapToBlogDto(any(Blog.class));
@@ -81,4 +90,32 @@ public class BlogServiceImplTest {
 
 
     }
+
+    @Test
+    public void testReturnUpdatedBlog_whenBlogFound() {
+       blogDto= BlogDto.builder()
+               .title(blogUpdateRequest.title())
+               .text(blogUpdateRequest.text())
+               .build();
+
+        doReturn(Optional.ofNullable(blog)).when(blogRepository).findById(anyLong());
+        doReturn(blogDto).when(blogMapper).mapToBlogDto(any(Blog.class));
+
+        BlogDto foundBlog = blogServiceImpl.updateBlog(BLOG_ID, blogUpdateRequest);
+
+        assertThat(foundBlog).isNotNull();
+        assertEquals(foundBlog.title(), blogUpdateRequest.title());
+        assertEquals(foundBlog.text(), blogUpdateRequest.text());
+    }
+
+    @Test
+    public void testThrowException_whenBlogNotFound() {
+        doReturn(Optional.empty()).when(blogRepository).findById(anyLong());
+
+        ResourceNotFound assertThrows = assertThrows(ResourceNotFound.class, () -> blogServiceImpl.updateBlog(BLOG_ID, blogUpdateRequest),
+                "Should throw exception when blog not found");
+
+        assertThat(assertThrows).hasMessage(ERROR_MESSAGE);
+    }
+
 }
