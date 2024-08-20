@@ -3,6 +3,7 @@ package com.scalefocus.blog_api.service;
 
 import com.scalefocus.blog_api.dto.BlogDto;
 import com.scalefocus.blog_api.request.BlogUpdateRequest;
+import com.scalefocus.blog_api.request.TagAddRequest;
 
 import java.util.List;
 
@@ -13,4 +14,8 @@ public interface BlogService {
     List<BlogDto> getAllBlogs();
 
     BlogDto updateBlog(Long blogId, BlogUpdateRequest blogUpdateRequest);
+
+    BlogDto addTag(Long blogId, TagAddRequest tagAddRequest);
+
+    BlogDto removeTag(Long blogId, Long tagId);
 }

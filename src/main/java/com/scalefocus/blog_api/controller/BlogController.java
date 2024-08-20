@@ -3,6 +3,7 @@ package com.scalefocus.blog_api.controller;
 
 import com.scalefocus.blog_api.dto.BlogDto;
 import com.scalefocus.blog_api.request.BlogUpdateRequest;
+import com.scalefocus.blog_api.request.TagAddRequest;
 import com.scalefocus.blog_api.service.BlogService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -30,10 +31,23 @@ public class BlogController {
         return new ResponseEntity<>(blogService.getAllBlogs(),HttpStatus.OK);
     }
 
+    //users can update specific blog
     @PutMapping("/{blogId}")
     public ResponseEntity<BlogDto> updateBlog(@PathVariable Long blogId,
                                               @RequestBody BlogUpdateRequest blogUpdateRequest){
         return new ResponseEntity<>(blogService.updateBlog(blogId, blogUpdateRequest), HttpStatus.OK);
+    }
+
+    //users can add new tag to existing blogs
+    @PutMapping("/{blogId}/tags")
+    public ResponseEntity<BlogDto> addTagToBlog(@PathVariable Long blogId, @RequestBody TagAddRequest tagAddRequest){
+        return new ResponseEntity<>(blogService.addTag(blogId, tagAddRequest), HttpStatus.OK);
+    }
+
+    //users can remove any tag from specific blog
+    @DeleteMapping("/{blogId}/tags/{tagId}")
+    public ResponseEntity<BlogDto> deleteTagFromBlog(@PathVariable Long blogId, @PathVariable Long tagId){
+        return new ResponseEntity<>(blogService.removeTag(blogId, tagId), HttpStatus.OK);
     }
 }
 
