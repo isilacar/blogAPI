@@ -20,8 +20,7 @@ import java.util.List;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.doReturn;
 
 public class BlogControllerTest {
@@ -55,6 +54,7 @@ public class BlogControllerTest {
         doReturn(blogDtoList).when(blogService).getAllBlogs();
         doReturn(blogDto).when(blogService).addTag(anyLong(),any(TagAddRequest.class));
         doReturn(blogDto).when(blogService).removeTag(anyLong(),anyLong());
+        doReturn(blogDtoList).when(blogService).getBlogsByTagName(anyString());
 
 
     }
@@ -114,5 +114,16 @@ public class BlogControllerTest {
         assertThat(blogDtoResponseEntity.getBody()).isNotNull();
         assertThat(blogDtoResponseEntity.getStatusCode()).isEqualTo(HttpStatusCode.valueOf(200));
         assertFalse(notExistingTag);
+    }
+
+
+    @Test
+    public void testGettingAllBlogsByTagName() {
+
+        ResponseEntity<List<BlogDto>> blogsByTagName = blogController.getAllBlogsByTagName("tag name");
+
+        assertThat(blogsByTagName.getBody()).isNotNull();
+        assertEquals(blogsByTagName.getStatusCode(), HttpStatusCode.valueOf(200));
+
     }
 }

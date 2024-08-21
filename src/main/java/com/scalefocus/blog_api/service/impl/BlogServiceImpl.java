@@ -75,5 +75,12 @@ public class BlogServiceImpl implements BlogService {
         return blogMapper.mapToBlogDto(blog);
     }
 
+    @Override
+    public List<BlogDto> getBlogsByTagName(String tagName) {
+        List<Blog> blogs = blogRepository.findByTagsName(tagName);
+
+        return blogMapper.mapToBlogDtoList(blogs);
+    }
+
 
 }

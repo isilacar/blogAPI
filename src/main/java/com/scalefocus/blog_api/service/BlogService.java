@@ -18,4 +18,6 @@ public interface BlogService {
     BlogDto addTag(Long blogId, TagAddRequest tagAddRequest);
 
     BlogDto removeTag(Long blogId, Long tagId);
+
+    List<BlogDto> getBlogsByTagName(String tagName);
 }

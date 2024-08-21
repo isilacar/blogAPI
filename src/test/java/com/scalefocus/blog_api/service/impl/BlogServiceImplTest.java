@@ -55,6 +55,7 @@ public class BlogServiceImplTest {
     private TagAddRequest tagAddRequest;
     private Tag tag;
     private TagDto tagDto;
+    private Set<TagDto> tagDtoSet;
 
     @BeforeEach
     public void setUp() {
@@ -73,7 +74,7 @@ public class BlogServiceImplTest {
                 .build();
         blog.getTags().add(tag);
 
-        Set<TagDto> tagDtoSet = blog.getTags().stream()
+        tagDtoSet = blog.getTags().stream()
                 .map(tag -> new TagDto(tag.getId(), tag.getName()))
                 .collect(Collectors.toSet());
 
@@ -203,4 +204,14 @@ public class BlogServiceImplTest {
         assertThat(assertThrows).hasMessage(BLOG_DOES_NOT_HAVE_TAG_ERROR_MESSAGE);
     }
 
+    @Test
+    public void testGettingBlogsByTagName(){
+        doReturn(blogList).when(blogRepository).findByTagsName(anyString());
+
+        List<BlogDto> blogsByTagName = blogServiceImpl.getBlogsByTagName(tagAddRequest.tagName());
+
+        assertThat(blogsByTagName).isNotNull();
+        assertFalse(blogsByTagName.isEmpty());
+        assertThat(blogsByTagName.size()).isGreaterThanOrEqualTo(1);
+    }
 }
