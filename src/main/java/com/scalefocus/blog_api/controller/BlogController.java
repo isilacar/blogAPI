@@ -49,6 +49,12 @@ public class BlogController {
     public ResponseEntity<BlogDto> deleteTagFromBlog(@PathVariable Long blogId, @PathVariable Long tagId){
         return new ResponseEntity<>(blogService.removeTag(blogId, tagId), HttpStatus.OK);
     }
+
+    //users can get all blogs by specific tagName
+    @GetMapping("/tagName/{tagName}")
+    public ResponseEntity<List<BlogDto>> getAllBlogsByTagName(@PathVariable String tagName){
+        return new ResponseEntity<>(blogService.getBlogsByTagName(tagName),HttpStatus.OK);
+    }
 }
 
 
