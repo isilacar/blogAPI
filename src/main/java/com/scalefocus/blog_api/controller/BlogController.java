@@ -51,8 +51,8 @@ public class BlogController {
     }
 
     //users can get all blogs by specific tagName
-    @GetMapping("/tagName")
-    public ResponseEntity<List<BlogDto>> getAllBlogsByTagName(@RequestParam String tagName){
+    @GetMapping("/tagName/{tagName}")
+    public ResponseEntity<List<BlogDto>> getAllBlogsByTagName(@PathVariable String tagName){
         return new ResponseEntity<>(blogService.getBlogsByTagName(tagName),HttpStatus.OK);
     }
 }
