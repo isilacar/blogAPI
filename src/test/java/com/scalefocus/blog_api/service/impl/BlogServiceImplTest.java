@@ -10,6 +10,7 @@ import com.scalefocus.blog_api.repository.BlogRepository;
 import com.scalefocus.blog_api.repository.TagRepository;
 import com.scalefocus.blog_api.request.BlogUpdateRequest;
 import com.scalefocus.blog_api.request.TagAddRequest;
+import com.scalefocus.blog_api.response.SimplifiedBlogResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -213,5 +214,17 @@ public class BlogServiceImplTest {
         assertThat(blogsByTagName).isNotNull();
         assertFalse(blogsByTagName.isEmpty());
         assertThat(blogsByTagName.size()).isGreaterThanOrEqualTo(1);
+    }
+
+    @Test
+    public void testGettingSimplifiedBlogs(){
+        doReturn(blogList).when(blogRepository).findAll();
+
+        List<SimplifiedBlogResponse> simplifiedBlogs = blogServiceImpl.getSimplifiedBlogs();
+
+        assertThat(simplifiedBlogs).isNotNull();
+        assertFalse(simplifiedBlogs.isEmpty());
+        assertThat(simplifiedBlogs.size()).isGreaterThanOrEqualTo(1);
+
     }
 }

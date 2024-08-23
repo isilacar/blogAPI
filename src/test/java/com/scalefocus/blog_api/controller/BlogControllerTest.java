@@ -4,6 +4,7 @@ import com.scalefocus.blog_api.dto.BlogDto;
 import com.scalefocus.blog_api.dto.TagDto;
 import com.scalefocus.blog_api.request.BlogUpdateRequest;
 import com.scalefocus.blog_api.request.TagAddRequest;
+import com.scalefocus.blog_api.response.SimplifiedBlogResponse;
 import com.scalefocus.blog_api.service.BlogService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -36,6 +37,8 @@ public class BlogControllerTest {
     private BlogUpdateRequest blogUpdateRequest;
     private TagAddRequest tagAddRequest;
     private TagDto tagAddDto;
+    private List<SimplifiedBlogResponse> simplifiedBlogResponseList;
+    private SimplifiedBlogResponse simplifiedBlogResponse;
 
     @BeforeEach
     public void setUp() {
@@ -49,12 +52,16 @@ public class BlogControllerTest {
         tagAddRequest= new TagAddRequest("new tag");
         tagAddDto = new TagDto(1L, tagAddRequest.tagName());
         blogDto.tagDtoSet().add(tagAddDto);
+        simplifiedBlogResponse=new SimplifiedBlogResponse(blogDto.title(),blogDto.text());
+        simplifiedBlogResponseList=List.of(simplifiedBlogResponse);
 
         doReturn(blogDto).when(blogService).createBlog(any(BlogDto.class));
         doReturn(blogDtoList).when(blogService).getAllBlogs();
         doReturn(blogDto).when(blogService).addTag(anyLong(),any(TagAddRequest.class));
         doReturn(blogDto).when(blogService).removeTag(anyLong(),anyLong());
         doReturn(blogDtoList).when(blogService).getBlogsByTagName(anyString());
+        doReturn(simplifiedBlogResponseList).when(blogService).getSimplifiedBlogs();
+
 
 
     }
@@ -124,6 +131,15 @@ public class BlogControllerTest {
 
         assertThat(blogsByTagName.getBody()).isNotNull();
         assertEquals(blogsByTagName.getStatusCode(), HttpStatusCode.valueOf(200));
+
+    }
+
+    @Test
+    public void testGettingSimplifiedBlogs(){
+        ResponseEntity<List<SimplifiedBlogResponse>> simplifiedBlogs = blogController.getSimplifiedBlogs();
+
+        assertThat(simplifiedBlogs.getBody()).isNotNull();
+        assertEquals(simplifiedBlogs.getStatusCode(), HttpStatusCode.valueOf(200));
 
     }
 }
