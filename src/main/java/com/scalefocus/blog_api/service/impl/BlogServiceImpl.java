@@ -10,6 +10,7 @@ import com.scalefocus.blog_api.repository.BlogRepository;
 import com.scalefocus.blog_api.repository.TagRepository;
 import com.scalefocus.blog_api.request.BlogUpdateRequest;
 import com.scalefocus.blog_api.request.TagAddRequest;
+import com.scalefocus.blog_api.response.SimplifiedBlogResponse;
 import com.scalefocus.blog_api.service.BlogService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -81,6 +82,13 @@ public class BlogServiceImpl implements BlogService {
 
         return blogMapper.mapToBlogDtoList(blogs);
     }
+
+    @Override
+    public List<SimplifiedBlogResponse> getSimplifiedBlogs() {
+        List<Blog> blogs = blogRepository.findAll();
+        return blogs.stream().map(blog -> new SimplifiedBlogResponse(blog.getTitle(),blog.getText())).toList();
+    }
+
 
 
 }

@@ -4,6 +4,7 @@ package com.scalefocus.blog_api.controller;
 import com.scalefocus.blog_api.dto.BlogDto;
 import com.scalefocus.blog_api.request.BlogUpdateRequest;
 import com.scalefocus.blog_api.request.TagAddRequest;
+import com.scalefocus.blog_api.response.SimplifiedBlogResponse;
 import com.scalefocus.blog_api.service.BlogService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -55,6 +56,12 @@ public class BlogController {
     public ResponseEntity<List<BlogDto>> getAllBlogsByTagName(@PathVariable String tagName){
         return new ResponseEntity<>(blogService.getBlogsByTagName(tagName),HttpStatus.OK);
     }
+
+    @GetMapping("/simplified")
+    public ResponseEntity<List<SimplifiedBlogResponse>> getSimplifiedBlogs(){
+        return new ResponseEntity<>(blogService.getSimplifiedBlogs(),HttpStatus.OK);
+    }
+
 }
 
 
