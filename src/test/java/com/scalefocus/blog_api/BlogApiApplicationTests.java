@@ -5,6 +5,7 @@ import com.scalefocus.blog_api.dto.TagDto;
 import com.scalefocus.blog_api.entity.Blog;
 import com.scalefocus.blog_api.request.BlogUpdateRequest;
 import com.scalefocus.blog_api.request.TagAddRequest;
+import com.scalefocus.blog_api.response.SimplifiedBlogResponse;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -132,5 +133,41 @@ class BlogApiApplicationTests {
         );
     }
 
+    @Test
+    public void testGettingBlogsBySpecificTagName() {
+        String specificTagUrl= baseUrl + "/tagName/{tagName}";
+
+        List<BlogDto> blogDtoListResponse = restTemplate.exchange(
+                specificTagUrl,
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<List<BlogDto>>() {
+                },
+                "Test Tag3"
+        ).getBody();
+
+        assertThat(blogDtoListResponse.size()).isGreaterThanOrEqualTo(1);
+        assertThat(blogTestH2Repository.findAll().size()).isGreaterThanOrEqualTo(1);
+
+    }
+
+
+    @Test
+    public void testGettingSimplifiedBlogResponse() {
+        String simplifiedBlogUrl= baseUrl + "/simplified";
+
+        List<SimplifiedBlogResponse> simplifiedBlogResponses = restTemplate.exchange(
+                simplifiedBlogUrl,
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<List<SimplifiedBlogResponse>>() {
+                }
+        ).getBody();
+
+        assertNotNull(simplifiedBlogResponses);
+        assertThat(simplifiedBlogResponses.size()).isGreaterThanOrEqualTo(1);
+        assertThat(blogTestH2Repository.findAll().size()).isGreaterThanOrEqualTo(1);
+
+    }
 
 }
