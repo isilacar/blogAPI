@@ -23,7 +23,7 @@ public class Blog {
 
     private String text;
 
-    @ManyToMany(cascade = { CascadeType.PERSIST, CascadeType.MERGE})
+    @ManyToMany(cascade = { CascadeType.PERSIST, CascadeType.MERGE},fetch = FetchType.EAGER)
     @JoinTable(name = "blog_tags",
             joinColumns ={ @JoinColumn(name = "blog_id", referencedColumnName = "id")},
             inverseJoinColumns = {@JoinColumn(name = "tag_id", referencedColumnName = "id")}

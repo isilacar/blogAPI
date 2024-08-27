@@ -1,6 +1,6 @@
 INSERT INTO BLOG(id, title, text)
-VALUES  (2, 'Test Title2', 'Test Text2'),
-        (3, 'Test Title3','Test Tile3');
+VALUES  (2, 'Test Title2','Test Text2'),
+        (3, 'Test Title3','Test Title3');
 
 INSERT INTO TAG(id,name)
 VALUES (2,'Test Tag2'),

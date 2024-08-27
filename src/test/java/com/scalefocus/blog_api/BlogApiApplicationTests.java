@@ -4,6 +4,7 @@ import com.scalefocus.blog_api.dto.BlogDto;
 import com.scalefocus.blog_api.dto.TagDto;
 import com.scalefocus.blog_api.entity.Blog;
 import com.scalefocus.blog_api.request.BlogUpdateRequest;
+import com.scalefocus.blog_api.request.TagAddRequest;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -95,5 +96,41 @@ class BlogApiApplicationTests {
                 () -> assertEquals("updated title", blogFromDB.getTitle())
         );
     }
+
+
+    @Test
+    public void testAddingTagToBlog() {
+        String addTagUrl= baseUrl + "/{blogId}/tags";
+
+        TagAddRequest tagAddRequest = new TagAddRequest("test tag");
+        restTemplate.put(addTagUrl, tagAddRequest, 2L);
+
+        Blog blogFromDB = blogTestH2Repository.findById(2L).get();
+
+        boolean tagFromDB = blogFromDB.getTags().stream().anyMatch(tag -> tag.getName().equals("test tag"));
+
+        assertAll(
+                () -> assertTrue(tagFromDB),
+                () -> assertNotNull(blogFromDB)
+        );
+
+    }
+
+
+    @Test
+    public void deletingTagFromBlog() {
+        String deleteTagUrl= baseUrl + "/{blogId}/tags/{tagId}";
+
+        restTemplate.delete(deleteTagUrl, 2L, 2L);
+
+        Blog foundedBlog = blogTestH2Repository.findById(2L).get();
+        boolean tagFromDB = foundedBlog.getTags().stream().anyMatch(tag -> tag.getName().equals("Test Tag2"));
+
+        assertAll(
+                () -> assertFalse(tagFromDB),
+                () -> assertNotNull(foundedBlog)
+        );
+    }
+
 
 }
