@@ -22,11 +22,27 @@ public class GlobalExceptionHandler {
                 webRequest.getDescription(false)), HttpStatus.NOT_FOUND);
     }
 
-    private String getTime(){
-        LocalDateTime now = LocalDateTime.now();
-        DateTimeFormatter dateTimeFormatter= DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-        return now.format(dateTimeFormatter);
+    @ExceptionHandler(UserExistException.class)
+    public ResponseEntity<ErrorDetails> badCredentialsException(UserExistException userExistException,
+                                                                WebRequest webRequest) {
+        return new ResponseEntity<>(new ErrorDetails(getTime()
+                , "BAD_REQUEST"
+                , userExistException.getMessage(),
+                webRequest.getDescription(false)), HttpStatus.BAD_REQUEST);
     }
 
+    @ExceptionHandler(UsernameNotFoundException.class)
+    public ResponseEntity<ErrorDetails> badCredentialsException(UsernameNotFoundException usernameNotFoundException,
+                                                                WebRequest webRequest) {
+        return new ResponseEntity<>(new ErrorDetails(getTime()
+                , "BAD_REQUEST"
+                , usernameNotFoundException.getMessage()
+                , webRequest.getDescription(false)), HttpStatus.BAD_REQUEST);
+    }
 
+    private String getTime() {
+        LocalDateTime now = LocalDateTime.now();
+        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        return now.format(dateTimeFormatter);
+    }
 }
