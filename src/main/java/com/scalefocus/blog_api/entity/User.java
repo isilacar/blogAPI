@@ -1,10 +1,13 @@
 package com.scalefocus.blog_api.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Table(name = "user_tbl")
@@ -26,4 +29,7 @@ public class User {
 
     @OneToMany(mappedBy = "user")
     private List<Token> tokenList = new ArrayList<>();
+
+    @OneToMany(mappedBy = "user", cascade ={CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REMOVE})
+    private Set<Blog> blogList = new HashSet<>();
 }
