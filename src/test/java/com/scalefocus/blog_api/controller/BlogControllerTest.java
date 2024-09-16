@@ -2,9 +2,14 @@ package com.scalefocus.blog_api.controller;
 
 import com.scalefocus.blog_api.dto.BlogDto;
 import com.scalefocus.blog_api.dto.TagDto;
+import com.scalefocus.blog_api.entity.Tag;
+import com.scalefocus.blog_api.entity.User;
+import com.scalefocus.blog_api.request.BlogCreationRequest;
 import com.scalefocus.blog_api.request.BlogUpdateRequest;
 import com.scalefocus.blog_api.request.TagAddRequest;
 import com.scalefocus.blog_api.response.SimplifiedBlogResponse;
+import com.scalefocus.blog_api.response.UserBlogResponse;
+import com.scalefocus.blog_api.response.UserResponse;
 import com.scalefocus.blog_api.service.BlogService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -17,6 +22,8 @@ import uk.co.jemos.podam.api.PodamFactory;
 import uk.co.jemos.podam.api.PodamFactoryImpl;
 
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -39,36 +46,53 @@ public class BlogControllerTest {
     private TagDto tagAddDto;
     private List<SimplifiedBlogResponse> simplifiedBlogResponseList;
     private SimplifiedBlogResponse simplifiedBlogResponse;
+    private BlogCreationRequest blogCreationReguest;
+    private User user;
+    private UserResponse userResponse;
+    private List<UserBlogResponse> userBlogResponses;
 
     @BeforeEach
     public void setUp() {
         MockitoAnnotations.openMocks(this);
         PodamFactory podamFactory = new PodamFactoryImpl();
 
+        user = User.builder()
+                .id(1L)
+                .username("test user")
+                .password("test password")
+                .displayName("test display name")
+                .build();
+
         blogDto = podamFactory.manufacturePojo(BlogDto.class);
         blogDtoList = List.of(blogDto);
 
         blogUpdateRequest = new BlogUpdateRequest("updated title", "updated text");
-        tagAddRequest= new TagAddRequest("new tag");
+        tagAddRequest = new TagAddRequest("new tag");
         tagAddDto = new TagDto(1L, tagAddRequest.tagName());
         blogDto.tagDtoSet().add(tagAddDto);
-        simplifiedBlogResponse=new SimplifiedBlogResponse(blogDto.title(),blogDto.text());
-        simplifiedBlogResponseList=List.of(simplifiedBlogResponse);
+        Set<Tag> tags = blogDto.tagDtoSet().stream().map(tagDto -> new Tag()).collect(Collectors.toSet());
+        blogCreationReguest = new BlogCreationRequest(blogDto.title(), blogDto.text(), tags, user.getId());
+        simplifiedBlogResponse = new SimplifiedBlogResponse(blogDto.title(), blogDto.text());
+        simplifiedBlogResponseList = List.of(simplifiedBlogResponse);
 
-        doReturn(blogDto).when(blogService).createBlog(any(BlogDto.class));
+        UserBlogResponse userBlogResponse1 = podamFactory.manufacturePojo(UserBlogResponse.class);
+        UserBlogResponse userBlogResponse2 = podamFactory.manufacturePojo(UserBlogResponse.class);
+
+        userBlogResponses = List.of(userBlogResponse1, userBlogResponse2);
+       userResponse= podamFactory.manufacturePojo(UserResponse.class);
+
+        doReturn(blogDto).when(blogService).createBlog(any(BlogCreationRequest.class));
         doReturn(blogDtoList).when(blogService).getAllBlogs();
-        doReturn(blogDto).when(blogService).addTag(anyLong(),any(TagAddRequest.class));
-        doReturn(blogDto).when(blogService).removeTag(anyLong(),anyLong());
+        doReturn(blogDto).when(blogService).addTag(anyLong(), any(TagAddRequest.class));
+        doReturn(blogDto).when(blogService).removeTag(anyLong(), anyLong());
         doReturn(blogDtoList).when(blogService).getBlogsByTagName(anyString());
         doReturn(simplifiedBlogResponseList).when(blogService).getSimplifiedBlogs();
-
-
-
+        doReturn(userBlogResponses).when(blogService).getUsersBlogs();
     }
 
     @Test
     public void testCreatingBlog() {
-        ResponseEntity<BlogDto> blogDtoResponseEntity = blogController.createBlog(blogDto);
+        ResponseEntity<BlogDto> blogDtoResponseEntity = blogController.createBlog(blogCreationReguest);
 
         assertThat(blogDtoResponseEntity.getBody()).isNotNull();
         assertThat(blogDtoResponseEntity.getStatusCode()).isEqualTo(HttpStatusCode.valueOf(201));
@@ -81,6 +105,15 @@ public class BlogControllerTest {
 
         assertThat(allBlogs.getBody()).isNotNull();
         assertEquals(allBlogs.getStatusCode(), HttpStatusCode.valueOf(200));
+
+    }
+
+    @Test
+    public void testGettingBlogs() {
+        ResponseEntity<List<UserBlogResponse>> userBlogs = blogController.getUserBlogs();
+
+        assertThat(userBlogs.getBody()).isNotNull();
+        assertEquals(userBlogs.getStatusCode(), HttpStatusCode.valueOf(200));
 
     }
 
@@ -101,18 +134,18 @@ public class BlogControllerTest {
     }
 
     @Test
-    public void testAddingTag(){
+    public void testAddingTag() {
         ResponseEntity<BlogDto> blogDtoResponseEntity = blogController.addTagToBlog(1L, tagAddRequest);
 
         TagDto existingTag = blogDtoResponseEntity.getBody().tagDtoSet().stream().filter(tagDto -> tagDto.name().equals("new tag")).findFirst().get();
 
         assertThat(blogDtoResponseEntity.getBody()).isNotNull();
         assertThat(blogDtoResponseEntity.getStatusCode()).isEqualTo(HttpStatusCode.valueOf(200));
-        assertEquals(existingTag.name(),tagAddRequest.tagName());
+        assertEquals(existingTag.name(), tagAddRequest.tagName());
     }
 
     @Test
-    public void testDeletingTag(){
+    public void testDeletingTag() {
         blogDto.tagDtoSet().remove(tagAddDto);
 
         ResponseEntity<BlogDto> blogDtoResponseEntity = blogController.deleteTagFromBlog(1L, 1L);
@@ -135,11 +168,22 @@ public class BlogControllerTest {
     }
 
     @Test
-    public void testGettingSimplifiedBlogs(){
+    public void testGettingSimplifiedBlogs() {
         ResponseEntity<List<SimplifiedBlogResponse>> simplifiedBlogs = blogController.getSimplifiedBlogs();
 
         assertThat(simplifiedBlogs.getBody()).isNotNull();
         assertEquals(simplifiedBlogs.getStatusCode(), HttpStatusCode.valueOf(200));
+
+    }
+
+    @Test
+    public void testDeletingBlog() {
+        doReturn(userResponse).when(blogService).deleteUserBlog(anyLong(),anyLong());
+
+        ResponseEntity<UserResponse> userResponseResponseEntity = blogController.deleteUserBlog(1L, 3L);
+
+        assertThat(userResponseResponseEntity.getBody()).isNotNull();
+        assertThat(userResponseResponseEntity.getStatusCode()).isEqualTo(HttpStatusCode.valueOf(200));
 
     }
 }
