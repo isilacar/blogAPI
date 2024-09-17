@@ -7,10 +7,8 @@ import com.scalefocus.blog_api.request.BlogUpdateRequest;
 import com.scalefocus.blog_api.request.TagAddRequest;
 import com.scalefocus.blog_api.response.SimplifiedBlogResponse;
 import com.scalefocus.blog_api.response.UserBlogResponse;
-import com.scalefocus.blog_api.response.UserResponse;
 
 import java.util.List;
-
 
 public interface BlogService {
 
@@ -18,7 +16,7 @@ public interface BlogService {
 
     List<BlogDto> getAllBlogs();
 
-    List<UserBlogResponse> getUsersBlogs();
+    UserBlogResponse getUserBlogs(String username);
 
     BlogDto updateBlog(Long blogId, BlogUpdateRequest blogUpdateRequest);
 
@@ -30,5 +28,5 @@ public interface BlogService {
 
     List<SimplifiedBlogResponse> getSimplifiedBlogs();
 
-    UserResponse deleteUserBlog(Long blogId, Long userId);
+    void deleteUserBlogByName(Long blogId, String username);
 }

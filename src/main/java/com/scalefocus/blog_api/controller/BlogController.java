@@ -7,7 +7,6 @@ import com.scalefocus.blog_api.request.BlogUpdateRequest;
 import com.scalefocus.blog_api.request.TagAddRequest;
 import com.scalefocus.blog_api.response.SimplifiedBlogResponse;
 import com.scalefocus.blog_api.response.UserBlogResponse;
-import com.scalefocus.blog_api.response.UserResponse;
 import com.scalefocus.blog_api.service.BlogService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -35,10 +34,10 @@ public class BlogController {
         return new ResponseEntity<>(blogService.getAllBlogs(), HttpStatus.OK);
     }
 
-    //authenticated users can get other user's posts
-    @GetMapping("/users")
-    public ResponseEntity<List<UserBlogResponse>> getUserBlogs() {
-        return new ResponseEntity<>(blogService.getUsersBlogs(), HttpStatus.OK);
+    //authenticated users can get other users blogs
+    @GetMapping("/users/{username}")
+    public ResponseEntity<UserBlogResponse> getUserBlogs(@PathVariable String username) {
+        return new ResponseEntity<>(blogService.getUserBlogs(username), HttpStatus.OK);
     }
 
     //users can update specific blog
@@ -73,10 +72,12 @@ public class BlogController {
     }
 
     //authenticated users can remove own blogs
-    @DeleteMapping("/{blogId}/users/{userId}")
-    public ResponseEntity<UserResponse> deleteUserBlog(@PathVariable Long blogId, @PathVariable Long userId) {
-        return new ResponseEntity<>(blogService.deleteUserBlog(blogId, userId), HttpStatus.OK);
+    @DeleteMapping("/{blogId}/users/{username}")
+    public ResponseEntity<Void> deleteUserBlogByName(@PathVariable Long blogId, @PathVariable String  username) {
+        blogService.deleteUserBlogByName(blogId, username);
+        return new ResponseEntity<>(HttpStatus.OK);
     }
+
 }
 
 

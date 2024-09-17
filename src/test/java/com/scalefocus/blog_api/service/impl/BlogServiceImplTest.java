@@ -15,7 +15,6 @@ import com.scalefocus.blog_api.request.BlogUpdateRequest;
 import com.scalefocus.blog_api.request.TagAddRequest;
 import com.scalefocus.blog_api.response.SimplifiedBlogResponse;
 import com.scalefocus.blog_api.response.UserBlogResponse;
-import com.scalefocus.blog_api.response.UserResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -28,7 +27,7 @@ import java.util.stream.Collectors;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.*;
 
 public class BlogServiceImplTest {
 
@@ -85,7 +84,6 @@ public class BlogServiceImplTest {
         tags.add(tag3);
 
         blog = new Blog(1L, "test title", "test,text", tags, user);
-        // blog = podamFactory.manufacturePojo(Blog.class);
         blogList = List.of(blog);
 
         blogUpdateRequest = new BlogUpdateRequest("updated title", "updated text");
@@ -116,7 +114,7 @@ public class BlogServiceImplTest {
                 .build();
         blogDto.tagDtoSet().add(tagDto);
 
-        users=new ArrayList<>();
+        users = new ArrayList<>();
         Set<Blog> blogs = new HashSet<>(blogList);
         user.setBlogList(blogs);
         Blog newBlog = new Blog(6L, "test title", "test,text", tags, user);
@@ -127,17 +125,6 @@ public class BlogServiceImplTest {
         doReturn(blogDto).when(blogMapper).mapToBlogDto(any(Blog.class));
         doReturn(blogDtoList).when(blogMapper).mapToBlogDtoList(anyList());
 
-
-    }
-
-    @Test
-    public void testGettingAllUsersBlog() {
-        doReturn(users).when(userRepository).findAll();
-
-        List<UserBlogResponse> usersBlogs = blogServiceImpl.getUsersBlogs();
-
-        assertThat(usersBlogs).isNotNull();
-        assertThat(usersBlogs.size()).isGreaterThanOrEqualTo(1);
 
     }
 
@@ -156,13 +143,13 @@ public class BlogServiceImplTest {
 
     @Test
     public void testGettingAllBlogs() {
-        doReturn(blogList).when(blogRepository).findAll();
+        doReturn(Optional.of(user)).when(userRepository).findByUsername(anyString());
+        doReturn(blogList).when(blogRepository).getBlogsByUserUsername(anyString());
 
-        List<BlogDto> allBlogs = blogServiceImpl.getAllBlogs();
+        UserBlogResponse userBlogResponse = blogServiceImpl.getUserBlogs(user.getUsername());
 
-        assertThat(allBlogs).isNotNull();
-        assertEquals(allBlogs.size(), blogList.size());
-
+        assertThat(userBlogResponse).isNotNull();
+        assertEquals(userBlogResponse.getDisplayName(), user.getDisplayName());
 
     }
 
@@ -249,7 +236,7 @@ public class BlogServiceImplTest {
     }
 
     @Test
-    public void testGettingBlogsByTagName(){
+    public void testGettingBlogsByTagName() {
         doReturn(blogList).when(blogRepository).findByTagsName(anyString());
 
         List<BlogDto> blogsByTagName = blogServiceImpl.getBlogsByTagName(tagAddRequest.tagName());
@@ -260,7 +247,7 @@ public class BlogServiceImplTest {
     }
 
     @Test
-    public void testGettingSimplifiedBlogs(){
+    public void testGettingSimplifiedBlogs() {
         doReturn(blogList).when(blogRepository).findAll();
 
         List<SimplifiedBlogResponse> simplifiedBlogs = blogServiceImpl.getSimplifiedBlogs();
@@ -272,15 +259,15 @@ public class BlogServiceImplTest {
     }
 
     @Test
-    public void testDeletingBlog(){
-        doReturn(Optional.of(user)).when(userRepository).findById(anyLong());
+    public void testDeletingBlog() {
+        doReturn(Optional.of(user)).when(userRepository).findByUsername(anyString());
         doReturn(user).when(userRepository).save(any(User.class));
 
-        UserResponse userResponse = blogServiceImpl.deleteUserBlog(6L, 1L);
-        assertThat(userResponse).isNotNull();
+        blogServiceImpl.deleteUserBlogByName(6L, user.getUsername());
 
-        boolean anyMatch = userResponse.getBlogList().stream().anyMatch(blogDto -> blogDto.id() == 6);
+        verify(userRepository, times(1)).findByUsername(anyString());
+        verify(blogRepository, times(1)).delete(any(Blog.class));
 
-        assertFalse(anyMatch);
     }
+
 }

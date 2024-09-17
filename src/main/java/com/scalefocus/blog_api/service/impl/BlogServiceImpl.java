@@ -2,7 +2,6 @@ package com.scalefocus.blog_api.service.impl;
 
 
 import com.scalefocus.blog_api.dto.BlogDto;
-import com.scalefocus.blog_api.dto.TagDto;
 import com.scalefocus.blog_api.entity.Blog;
 import com.scalefocus.blog_api.entity.Tag;
 import com.scalefocus.blog_api.entity.User;
@@ -14,14 +13,14 @@ import com.scalefocus.blog_api.repository.UserRepository;
 import com.scalefocus.blog_api.request.BlogCreationRequest;
 import com.scalefocus.blog_api.request.BlogUpdateRequest;
 import com.scalefocus.blog_api.request.TagAddRequest;
-import com.scalefocus.blog_api.response.*;
+import com.scalefocus.blog_api.response.BlogResponse;
+import com.scalefocus.blog_api.response.SimplifiedBlogResponse;
+import com.scalefocus.blog_api.response.UserBlogResponse;
 import com.scalefocus.blog_api.service.BlogService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -100,37 +99,27 @@ public class BlogServiceImpl implements BlogService {
     }
 
     @Override
-    public UserResponse deleteUserBlog(Long blogId, Long userId) {
-        User user = userRepository.findById(userId).orElseThrow(() -> new ResourceNotFound("User Not Found"));
-        Blog blog = user.getBlogList().stream()
-                .filter(b -> b.getId().equals(blogId))
-                .findFirst()
+    public void deleteUserBlogByName(Long blogId, String username) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new ResourceNotFound("User Not Found with name: " + username));
+
+        Blog blog = user.getBlogList().stream().filter(b -> b.getId().equals(blogId)).findFirst()
                 .orElseThrow(() -> new ResourceNotFound("Blog does not exist with id: " + blogId));
         user.getBlogList().remove(blog);
-        User savedUser = userRepository.save(user);
+        userRepository.save(user);
         blogRepository.delete(blog);
-        UserResponse userResponse = new UserResponse();
-        userResponse.setUserId(savedUser.getId());
-        Set<TagDto> tagDtoSet = blog.getTags().stream().map(t -> new TagDto(t.getId(), t.getName())).collect(Collectors.toSet());
-        userResponse.setBlogList(user.getBlogList().stream()
-                .map(b -> new BlogDto(b.getId(), b.getTitle(), b.getText(), tagDtoSet))
-                .collect(Collectors.toList()));
-        return userResponse;
-
     }
-    @Override
-    public List<UserBlogResponse> getUsersBlogs() {
 
-        return userRepository.findAll().stream().map(user -> {
-            List<BlogResponse> blogResponses = user.getBlogList().stream()
-                    .map(blog -> new BlogResponse(blog.getTitle(), blog.getText())).toList();
-            UserBlogResponse userBlogResponse = new UserBlogResponse();
-            userBlogResponse.setDisplayName(user.getDisplayName());
-            userBlogResponse.setBlogs(blogResponses);
+    public UserBlogResponse getUserBlogs(String username) {
+        User user = userRepository.findByUsername(username).orElseThrow(() -> new ResourceNotFound("User Not Found with name: " + username));
+        List<Blog> userBlogs = blogRepository.getBlogsByUserUsername(username);
+        List<BlogResponse> blogResponseList = userBlogs.stream().map(blog -> new BlogResponse(blog.getTitle(), blog.getText())).toList();
 
-            return userBlogResponse;
-        }).collect(Collectors.toList());
+        UserBlogResponse userBlogResponse = new UserBlogResponse();
+        userBlogResponse.setDisplayName(user.getDisplayName());
+        userBlogResponse.setBlogs(blogResponseList);
 
+        return userBlogResponse;
     }
 
 }

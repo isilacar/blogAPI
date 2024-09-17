@@ -9,7 +9,6 @@ import com.scalefocus.blog_api.request.BlogUpdateRequest;
 import com.scalefocus.blog_api.request.TagAddRequest;
 import com.scalefocus.blog_api.response.SimplifiedBlogResponse;
 import com.scalefocus.blog_api.response.UserBlogResponse;
-import com.scalefocus.blog_api.response.UserResponse;
 import com.scalefocus.blog_api.service.BlogService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -29,6 +28,7 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 
 public class BlogControllerTest {
@@ -48,8 +48,6 @@ public class BlogControllerTest {
     private SimplifiedBlogResponse simplifiedBlogResponse;
     private BlogCreationRequest blogCreationReguest;
     private User user;
-    private UserResponse userResponse;
-    private List<UserBlogResponse> userBlogResponses;
 
     @BeforeEach
     public void setUp() {
@@ -75,11 +73,7 @@ public class BlogControllerTest {
         simplifiedBlogResponse = new SimplifiedBlogResponse(blogDto.title(), blogDto.text());
         simplifiedBlogResponseList = List.of(simplifiedBlogResponse);
 
-        UserBlogResponse userBlogResponse1 = podamFactory.manufacturePojo(UserBlogResponse.class);
-        UserBlogResponse userBlogResponse2 = podamFactory.manufacturePojo(UserBlogResponse.class);
-
-        userBlogResponses = List.of(userBlogResponse1, userBlogResponse2);
-       userResponse= podamFactory.manufacturePojo(UserResponse.class);
+        UserBlogResponse userBlogResponse = podamFactory.manufacturePojo(UserBlogResponse.class);
 
         doReturn(blogDto).when(blogService).createBlog(any(BlogCreationRequest.class));
         doReturn(blogDtoList).when(blogService).getAllBlogs();
@@ -87,7 +81,7 @@ public class BlogControllerTest {
         doReturn(blogDto).when(blogService).removeTag(anyLong(), anyLong());
         doReturn(blogDtoList).when(blogService).getBlogsByTagName(anyString());
         doReturn(simplifiedBlogResponseList).when(blogService).getSimplifiedBlogs();
-        doReturn(userBlogResponses).when(blogService).getUsersBlogs();
+        doReturn(userBlogResponse).when(blogService).getUserBlogs(anyString());
     }
 
     @Test
@@ -110,7 +104,7 @@ public class BlogControllerTest {
 
     @Test
     public void testGettingBlogs() {
-        ResponseEntity<List<UserBlogResponse>> userBlogs = blogController.getUserBlogs();
+        ResponseEntity<UserBlogResponse> userBlogs = blogController.getUserBlogs(user.getUsername());
 
         assertThat(userBlogs.getBody()).isNotNull();
         assertEquals(userBlogs.getStatusCode(), HttpStatusCode.valueOf(200));
@@ -178,12 +172,12 @@ public class BlogControllerTest {
 
     @Test
     public void testDeletingBlog() {
-        doReturn(userResponse).when(blogService).deleteUserBlog(anyLong(),anyLong());
+       doNothing().when(blogService).deleteUserBlogByName(anyLong(),anyString());
 
-        ResponseEntity<UserResponse> userResponseResponseEntity = blogController.deleteUserBlog(1L, 3L);
+        ResponseEntity<Void> deletedUserBlog = blogController.deleteUserBlogByName(1L, "username1");
 
-        assertThat(userResponseResponseEntity.getBody()).isNotNull();
-        assertThat(userResponseResponseEntity.getStatusCode()).isEqualTo(HttpStatusCode.valueOf(200));
+        assertThat(deletedUserBlog.getStatusCode()).isEqualTo(HttpStatusCode.valueOf(200));
 
     }
+
 }
