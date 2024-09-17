@@ -46,7 +46,7 @@ public class SecurityConfig {
                 .cors(CorsConfigurer::disable)
                 .csrf(CsrfConfigurer::disable)
                 .authorizeHttpRequests(authorize ->
-                        authorize.requestMatchers("/api/users/register", "/api/users/authenticate", "/h2-console/**").permitAll()
+                        authorize.requestMatchers("/api/users/**", "/h2-console/**","/swagger-ui/**", "/v3/api-docs/**").permitAll()
                                 .anyRequest().authenticated())
                 .sessionManagement(sessionManagement ->
                         sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

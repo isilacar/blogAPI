@@ -172,9 +172,9 @@ public class BlogControllerTest {
 
     @Test
     public void testDeletingBlog() {
-       doNothing().when(blogService).deleteUserBlogByName(anyLong(),anyString());
+       doNothing().when(blogService).deleteUserBlogByUsername(anyLong(),anyString());
 
-        ResponseEntity<Void> deletedUserBlog = blogController.deleteUserBlogByName(1L, "username1");
+        ResponseEntity<Void> deletedUserBlog = blogController.deleteUserBlogByUsername(1L, "username1");
 
         assertThat(deletedUserBlog.getStatusCode()).isEqualTo(HttpStatusCode.valueOf(200));
 

@@ -99,7 +99,7 @@ public class BlogServiceImpl implements BlogService {
     }
 
     @Override
-    public void deleteUserBlogByName(Long blogId, String username) {
+    public void deleteUserBlogByUsername(Long blogId, String username) {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new ResourceNotFound("User Not Found with name: " + username));
 

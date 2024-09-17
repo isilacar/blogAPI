@@ -28,5 +28,5 @@ public interface BlogService {
 
     List<SimplifiedBlogResponse> getSimplifiedBlogs();
 
-    void deleteUserBlogByName(Long blogId, String username);
+    void deleteUserBlogByUsername(Long blogId, String username);
 }

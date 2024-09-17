@@ -263,7 +263,7 @@ public class BlogServiceImplTest {
         doReturn(Optional.of(user)).when(userRepository).findByUsername(anyString());
         doReturn(user).when(userRepository).save(any(User.class));
 
-        blogServiceImpl.deleteUserBlogByName(6L, user.getUsername());
+        blogServiceImpl.deleteUserBlogByUsername(6L, user.getUsername());
 
         verify(userRepository, times(1)).findByUsername(anyString());
         verify(blogRepository, times(1)).delete(any(Blog.class));
