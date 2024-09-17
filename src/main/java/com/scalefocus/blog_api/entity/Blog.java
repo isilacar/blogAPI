@@ -46,4 +46,10 @@ public class Blog {
     )
     private Set<Tag> tags = new HashSet<>();
 
+    @Schema(
+            description = "Blog belong to which user information Information"
+    )
+    @ManyToOne()
+    @JoinColumn(name = "user_id")
+    private User user;
 }

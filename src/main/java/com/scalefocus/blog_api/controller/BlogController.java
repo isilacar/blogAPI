@@ -2,9 +2,11 @@ package com.scalefocus.blog_api.controller;
 
 
 import com.scalefocus.blog_api.dto.BlogDto;
+import com.scalefocus.blog_api.request.BlogCreationRequest;
 import com.scalefocus.blog_api.request.BlogUpdateRequest;
 import com.scalefocus.blog_api.request.TagAddRequest;
 import com.scalefocus.blog_api.response.SimplifiedBlogResponse;
+import com.scalefocus.blog_api.response.UserBlogResponse;
 import com.scalefocus.blog_api.service.BlogService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -27,6 +29,7 @@ public class BlogController {
 
     private final BlogService blogService;
 
+    //authenticated users can create blogs
     @Operation(
             summary = "Create Blog REST API",
             description = "Create Blog REST API is used to save blog in a database"
@@ -37,13 +40,13 @@ public class BlogController {
     )
     //Users can add blog with tagNames
     @PostMapping
-    public ResponseEntity<BlogDto> createBlog(@RequestBody BlogDto blogDto){
-        return new ResponseEntity<>(blogService.createBlog(blogDto), HttpStatus.CREATED);
+    public ResponseEntity<BlogDto> createBlog(@RequestBody BlogCreationRequest blogCreationRequest) {
+        return new ResponseEntity<>(blogService.createBlog(blogCreationRequest), HttpStatus.CREATED);
     }
 
     @Operation(
             summary = "Get All Blogs REST API",
-            description = "Get All Blogs REST API is used to get a all the blogs from the database"
+            description = "Get All Blogs REST API is used to get  all the blogs from the database"
     )
     @ApiResponse(
             responseCode = "200",
@@ -53,6 +56,20 @@ public class BlogController {
     @GetMapping
     public ResponseEntity<List<BlogDto>> getAllBlogs(){
         return new ResponseEntity<>(blogService.getAllBlogs(),HttpStatus.OK);
+    }
+
+    @Operation(
+            summary = "Get User Blogs REST API",
+            description = "Get User Blogs REST API is used to get the blogs for specific user"
+    )
+    @ApiResponse(
+            responseCode = "200",
+            description = "HTTP Status 200 SUCCESS"
+    )
+    //authenticated users can get other users blogs
+    @GetMapping("/users/{username}")
+    public ResponseEntity<UserBlogResponse> getUserBlogs(@PathVariable String username) {
+        return new ResponseEntity<>(blogService.getUserBlogs(username), HttpStatus.OK);
     }
 
     @Operation(
@@ -112,6 +129,7 @@ public class BlogController {
         return new ResponseEntity<>(blogService.getBlogsByTagName(tagName),HttpStatus.OK);
     }
 
+    //users can get simplified blog list
     @Operation(
             summary = "Get Simplified Blogs REST API",
             description = "Get simplified Blogs REST API is used to get simplified blogs which has title and text attributes from the database"
@@ -123,6 +141,21 @@ public class BlogController {
     @GetMapping("/simplified")
     public ResponseEntity<List<SimplifiedBlogResponse>> getSimplifiedBlogs(){
         return new ResponseEntity<>(blogService.getSimplifiedBlogs(),HttpStatus.OK);
+    }
+
+    @Operation(
+            summary = "Delete User Blog By Username REST API",
+            description = "Delete User Blog By Username Rest API is used to delete specific blog with the help of the username"
+    )
+    @ApiResponse(
+            responseCode = "200",
+            description = "HTTP Status 200 SUCCESS"
+    )
+    //authenticated users can remove own blogs
+    @DeleteMapping("/{blogId}/users/{username}")
+    public ResponseEntity<Void> deleteUserBlogByUsername(@PathVariable Long blogId, @PathVariable String  username) {
+        blogService.deleteUserBlogByUsername(blogId, username);
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
 }
