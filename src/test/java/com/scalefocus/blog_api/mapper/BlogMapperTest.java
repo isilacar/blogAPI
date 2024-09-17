@@ -4,14 +4,15 @@ import com.scalefocus.blog_api.dto.BlogDto;
 import com.scalefocus.blog_api.dto.TagDto;
 import com.scalefocus.blog_api.entity.Blog;
 import com.scalefocus.blog_api.entity.Tag;
+import com.scalefocus.blog_api.entity.User;
+import com.scalefocus.blog_api.request.BlogCreationRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import uk.co.jemos.podam.api.PodamFactory;
-import uk.co.jemos.podam.api.PodamFactoryImpl;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -34,13 +35,28 @@ public class BlogMapperTest {
     private Set<Tag> tags;
     private Set<TagDto> tagDtoSet;
     private List<Blog> blogList;
+    private BlogCreationRequest blogCreationRequest;
+    private User user;
 
     @BeforeEach
     public void setUp() {
         MockitoAnnotations.openMocks(this);
-        PodamFactory podamFactory = new PodamFactoryImpl();
+        user=User.builder()
+                .id(1L)
+                .username("test user")
+                .password("test password")
+                .displayName("test display name")
+                .build();
 
-        blog = podamFactory.manufacturePojo(Blog.class);
+        Tag tag1=new Tag(1L,"test tag1",new HashSet<>());
+        Tag tag2=new Tag(2L,"test tag2",new HashSet<>());
+        Tag tag3=new Tag(3L,"test tag3",new HashSet<>());
+        Set<Tag> tags = new HashSet<>();
+        tags.add(tag1);
+        tags.add(tag2);
+        tags.add(tag3);
+
+        blog=new Blog(1L,"test title","test,text",tags,user);
         tags = blog.getTags();
         tagDtoSet = tags.stream()
                 .map(tag -> new TagDto(tag.getId(), tag.getName()))
@@ -55,9 +71,16 @@ public class BlogMapperTest {
                 .tagDtoSet(tagDtoSet)
                 .build();
 
+        blogCreationRequest=BlogCreationRequest.builder()
+                .title(blog.getTitle())
+                .text(blog.getText())
+                .tags(blog.getTags())
+                .build();
+
         doReturn(tagDtoSet).when(tagMapper).mapToTagDtoList(anySet());
 
         doReturn(tags).when(tagMapper).mapToTagList(anySet());
+
 
     }
 
@@ -92,4 +115,12 @@ public class BlogMapperTest {
 
     }
 
+    @Test
+    public void testBlogCreationRequestToBlog(){
+        Blog returnedBlog = blogMapper.getBlog(blogCreationRequest, user);
+
+        assertThat(returnedBlog).isNotNull();
+        assertThat(returnedBlog.getTitle()).isEqualTo(blogCreationRequest.getTitle());
+        assertThat(returnedBlog.getTags()).isEqualTo(blogCreationRequest.getTags());
+    }
 }

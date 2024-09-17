@@ -4,35 +4,35 @@ import com.scalefocus.blog_api.dto.BlogDto;
 import com.scalefocus.blog_api.dto.TagDto;
 import com.scalefocus.blog_api.entity.Blog;
 import com.scalefocus.blog_api.entity.Tag;
+import com.scalefocus.blog_api.entity.User;
 import com.scalefocus.blog_api.exception.ResourceNotFound;
 import com.scalefocus.blog_api.mapper.BlogMapper;
 import com.scalefocus.blog_api.repository.BlogRepository;
 import com.scalefocus.blog_api.repository.TagRepository;
+import com.scalefocus.blog_api.repository.UserRepository;
+import com.scalefocus.blog_api.request.BlogCreationRequest;
 import com.scalefocus.blog_api.request.BlogUpdateRequest;
 import com.scalefocus.blog_api.request.TagAddRequest;
 import com.scalefocus.blog_api.response.SimplifiedBlogResponse;
+import com.scalefocus.blog_api.response.UserBlogResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import uk.co.jemos.podam.api.PodamFactory;
-import uk.co.jemos.podam.api.PodamFactoryImpl;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.*;
 
 public class BlogServiceImplTest {
 
     public static final long BLOG_ID = 1L;
-    private static final Long TAG_ID = 1L;
+    private static final Long TAG_ID = 5L;
     public static final String BLOG_NOT_FOUND_ERROR_MESSAGE = "Blog does not exist with id: " + BLOG_ID;
     public static final String BLOG_DOES_NOT_HAVE_TAG_ERROR_MESSAGE = "Blog with id:" + BLOG_ID + " does not have any tag with id: " + TAG_ID;
 
@@ -44,6 +44,9 @@ public class BlogServiceImplTest {
 
     @Mock
     private TagRepository tagRepository;
+
+    @Mock
+    private UserRepository userRepository;
 
     @InjectMocks
     private BlogServiceImpl blogServiceImpl;
@@ -57,13 +60,30 @@ public class BlogServiceImplTest {
     private Tag tag;
     private TagDto tagDto;
     private Set<TagDto> tagDtoSet;
+    private BlogCreationRequest blogCreationRequest;
+    private User user;
+    List<User> users;
 
     @BeforeEach
     public void setUp() {
         MockitoAnnotations.openMocks(this);
-        PodamFactory podamFactory = new PodamFactoryImpl();
 
-        blog = podamFactory.manufacturePojo(Blog.class);
+        user = User.builder()
+                .id(1L)
+                .username("test user")
+                .password("test password")
+                .displayName("test display name")
+                .build();
+
+        Tag tag1 = new Tag(1L, "test tag1", new HashSet<>());
+        Tag tag2 = new Tag(2L, "test tag2", new HashSet<>());
+        Tag tag3 = new Tag(3L, "test tag3", new HashSet<>());
+        Set<Tag> tags = new HashSet<>();
+        tags.add(tag1);
+        tags.add(tag2);
+        tags.add(tag3);
+
+        blog = new Blog(1L, "test title", "test,text", tags, user);
         blogList = List.of(blog);
 
         blogUpdateRequest = new BlogUpdateRequest("updated title", "updated text");
@@ -75,6 +95,7 @@ public class BlogServiceImplTest {
                 .build();
         blog.getTags().add(tag);
 
+        blogCreationRequest = new BlogCreationRequest(blog.getTitle(), blog.getText(), blog.getTags(), user.getId());
         tagDtoSet = blog.getTags().stream()
                 .map(tag -> new TagDto(tag.getId(), tag.getName()))
                 .collect(Collectors.toSet());
@@ -93,6 +114,13 @@ public class BlogServiceImplTest {
                 .build();
         blogDto.tagDtoSet().add(tagDto);
 
+        users = new ArrayList<>();
+        Set<Blog> blogs = new HashSet<>(blogList);
+        user.setBlogList(blogs);
+        Blog newBlog = new Blog(6L, "test title", "test,text", tags, user);
+        user.getBlogList().add(newBlog);
+        users.add(user);
+
         doReturn(blog).when(blogMapper).mapToBlog(any(BlogDto.class));
         doReturn(blogDto).when(blogMapper).mapToBlogDto(any(Blog.class));
         doReturn(blogDtoList).when(blogMapper).mapToBlogDtoList(anyList());
@@ -102,9 +130,11 @@ public class BlogServiceImplTest {
 
     @Test
     public void testCreatingBlog() {
+        doReturn(Optional.of(user)).when(userRepository).findById(anyLong());
         doReturn(blog).when(blogRepository).save(any(Blog.class));
+        doReturn(blog).when(blogMapper).getBlog(any(BlogCreationRequest.class), any(User.class));
 
-        BlogDto savedBlog = blogServiceImpl.createBlog(blogDto);
+        BlogDto savedBlog = blogServiceImpl.createBlog(blogCreationRequest);
 
         assertThat(savedBlog).isNotNull();
         assertThat(savedBlog.id()).isEqualTo(blog.getId());
@@ -113,13 +143,13 @@ public class BlogServiceImplTest {
 
     @Test
     public void testGettingAllBlogs() {
-        doReturn(blogList).when(blogRepository).findAll();
+        doReturn(Optional.of(user)).when(userRepository).findByUsername(anyString());
+        doReturn(blogList).when(blogRepository).getBlogsByUserUsername(anyString());
 
-        List<BlogDto> allBlogs = blogServiceImpl.getAllBlogs();
+        UserBlogResponse userBlogResponse = blogServiceImpl.getUserBlogs(user.getUsername());
 
-        assertThat(allBlogs).isNotNull();
-        assertEquals(allBlogs.size(), blogList.size());
-
+        assertThat(userBlogResponse).isNotNull();
+        assertEquals(userBlogResponse.getDisplayName(), user.getDisplayName());
 
     }
 
@@ -206,7 +236,7 @@ public class BlogServiceImplTest {
     }
 
     @Test
-    public void testGettingBlogsByTagName(){
+    public void testGettingBlogsByTagName() {
         doReturn(blogList).when(blogRepository).findByTagsName(anyString());
 
         List<BlogDto> blogsByTagName = blogServiceImpl.getBlogsByTagName(tagAddRequest.tagName());
@@ -217,7 +247,7 @@ public class BlogServiceImplTest {
     }
 
     @Test
-    public void testGettingSimplifiedBlogs(){
+    public void testGettingSimplifiedBlogs() {
         doReturn(blogList).when(blogRepository).findAll();
 
         List<SimplifiedBlogResponse> simplifiedBlogs = blogServiceImpl.getSimplifiedBlogs();
@@ -227,4 +257,17 @@ public class BlogServiceImplTest {
         assertThat(simplifiedBlogs.size()).isGreaterThanOrEqualTo(1);
 
     }
+
+    @Test
+    public void testDeletingBlog() {
+        doReturn(Optional.of(user)).when(userRepository).findByUsername(anyString());
+        doReturn(user).when(userRepository).save(any(User.class));
+
+        blogServiceImpl.deleteUserBlogByName(6L, user.getUsername());
+
+        verify(userRepository, times(1)).findByUsername(anyString());
+        verify(blogRepository, times(1)).delete(any(Blog.class));
+
+    }
+
 }

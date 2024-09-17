@@ -2,14 +2,13 @@ package com.scalefocus.blog_api;
 
 import com.scalefocus.blog_api.dto.BlogDto;
 import com.scalefocus.blog_api.dto.TagDto;
+import com.scalefocus.blog_api.entity.Tag;
 import com.scalefocus.blog_api.entity.Token;
 import com.scalefocus.blog_api.entity.User;
-import com.scalefocus.blog_api.request.AuthenticationRequest;
-import com.scalefocus.blog_api.request.BlogUpdateRequest;
-import com.scalefocus.blog_api.request.RegisterRequest;
-import com.scalefocus.blog_api.request.TagAddRequest;
+import com.scalefocus.blog_api.request.*;
 import com.scalefocus.blog_api.response.SimplifiedBlogResponse;
 import com.scalefocus.blog_api.response.TokenResponse;
+import com.scalefocus.blog_api.response.UserBlogResponse;
 import com.scalefocus.blog_api.service.impl.UserServiceImpl;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -23,13 +22,13 @@ import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.*;
-import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.context.TestPropertySource;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
@@ -55,10 +54,8 @@ class BlogApiApplicationTests {
     @Autowired
     private TokenTestH2Repository tokenTestH2Repository;
 
-    @Autowired
-    private AuthenticationManager authenticationManager;
-
     private static TestRestTemplate restTemplate;
+    private User user;
 
     private HttpHeaders headers;
     @Autowired
@@ -73,7 +70,7 @@ class BlogApiApplicationTests {
     @BeforeEach
     public void setUp() {
         baseUrl = "http://localhost:" + portNumber + "/api";
-        User user = userTestH2Repository.findById(3L).get();
+        user = userTestH2Repository.findById(3L).get();
         Authentication authentication = new UsernamePasswordAuthenticationToken(user, null, Collections.emptyList());
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
@@ -108,8 +105,14 @@ class BlogApiApplicationTests {
                 .text("integration text")
                 .tagDtoSet(tagDtoSet)
                 .build();
+        BlogCreationRequest blogCreationRequest = BlogCreationRequest.builder()
+                .title(blogDto.title())
+                .text(blogDto.text())
+                .userId(userTestH2Repository.findById(2L).get().getId())
+                .tags(tagDtoSet.stream().map(t -> new Tag()).collect(Collectors.toSet()))
+                .build();
 
-        BlogDto savedBlogDto = restTemplate.exchange(addingBlogUrl, HttpMethod.POST, new HttpEntity<>(blogDto, headers), BlogDto.class).getBody();
+        BlogDto savedBlogDto = restTemplate.exchange(addingBlogUrl, HttpMethod.POST, new HttpEntity<>(blogCreationRequest, headers), BlogDto.class).getBody();
 
         assertEquals("integration title", savedBlogDto.title());
         assertThat(blogTestH2Repository.findAll().size()).isGreaterThanOrEqualTo(1);
@@ -129,6 +132,20 @@ class BlogApiApplicationTests {
 
         assertThat(blogDtoListResponse.size()).isGreaterThanOrEqualTo(1);
         assertThat(blogTestH2Repository.findAll().size()).isGreaterThanOrEqualTo(1);
+
+    }
+
+    @Test
+    public void testGettingUserBlogs() {
+        String userBlogsUrl = baseUrl + "/blogs/users/{username}";
+
+        UserBlogResponse userBlogResponse = restTemplate.exchange(userBlogsUrl, HttpMethod.GET, new HttpEntity<>(null, headers), UserBlogResponse.class, user.getUsername()).getBody();
+
+        assertAll(
+                () -> assertNotNull(userBlogResponse),
+                () -> assertEquals(user.getDisplayName(), userBlogResponse.getDisplayName()),
+                () -> assertThat(userBlogResponse.getBlogs().size()).isGreaterThanOrEqualTo(2)
+        );
 
     }
 
@@ -247,6 +264,16 @@ class BlogApiApplicationTests {
         assertThat(tokenPart.length).isEqualTo(3);
     }
 
+    @Test
+    public void testingDeleteUserBlog(){
+        String deleteUserBlogUrl = baseUrl + "/blogs/{blogId}/users/{username}";
+
+        ResponseEntity<Void> deleteResponseEntity = restTemplate.exchange(deleteUserBlogUrl, HttpMethod.DELETE, new HttpEntity<>(null, headers), Void.class,4L,user.getUsername());
+        assertThat(deleteResponseEntity).isNotNull();
+        assertThat(deleteResponseEntity.getStatusCode()).isEqualTo(HttpStatus.OK);
+
+
+    }
 
     private static String generateToken(String username) {
         return Jwts.builder()

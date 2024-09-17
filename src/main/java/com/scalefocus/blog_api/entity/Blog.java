@@ -30,4 +30,7 @@ public class Blog {
     )
     private Set<Tag> tags = new HashSet<>();
 
+    @ManyToOne()
+    @JoinColumn(name = "user_id")
+    private User user;
 }
