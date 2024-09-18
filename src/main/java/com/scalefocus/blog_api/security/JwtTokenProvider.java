@@ -10,6 +10,8 @@ import io.jsonwebtoken.security.Keys;
 import io.jsonwebtoken.security.SignatureException;
 import lombok.Getter;
 import lombok.Setter;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
@@ -22,11 +24,14 @@ import java.util.Date;
 @Setter
 public class JwtTokenProvider {
 
+    private static final Logger logger = LogManager.getLogger(JwtTokenProvider.class);
+
     private String jwtSecretKey;
 
     private long jwtExpirationMilliseconds;
 
     public String generateToken(User user) {
+        logger.info("Generating token for user '{}'", user.getUsername());
         String username = user.getUsername();
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + jwtExpirationMilliseconds);
@@ -40,6 +45,7 @@ public class JwtTokenProvider {
     }
 
     public String getUsernameFromToken(String token) {
+        logger.info("Getting username from token");
         return Jwts.parserBuilder()
                 .setSigningKey(key())
                 .build()
@@ -49,6 +55,7 @@ public class JwtTokenProvider {
     }
 
     public boolean validateToken(String token) {
+        logger.info("Validating token");
         try {
             Jwts.parserBuilder()
                     .setSigningKey(key())
@@ -57,11 +64,13 @@ public class JwtTokenProvider {
             return !isTokenExpired(token);
         } catch (SignatureException | MalformedJwtException | ExpiredJwtException
                  | UnsupportedJwtException | IllegalArgumentException e) {
+            logger.error("Invalid JWT", e);
             return false;
         }
     }
 
     public boolean isTokenExpired(String token) {
+        logger.info("Checking if token is expired");
         Date expiration = Jwts.parserBuilder()
                 .setSigningKey(key())
                 .build()
