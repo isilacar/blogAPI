@@ -108,7 +108,7 @@ class BlogApiApplicationTests {
         BlogCreationRequest blogCreationRequest = BlogCreationRequest.builder()
                 .title(blogDto.title())
                 .text(blogDto.text())
-                .userId(userTestH2Repository.findById(2L).get().getId())
+                .userId(userTestH2Repository.findById(3L).get().getId())
                 .tags(tagDtoSet.stream().map(t -> new Tag()).collect(Collectors.toSet()))
                 .build();
 
