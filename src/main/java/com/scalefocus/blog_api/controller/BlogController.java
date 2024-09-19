@@ -12,6 +12,8 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -27,6 +29,8 @@ import java.util.List;
 @RequiredArgsConstructor
 public class BlogController {
 
+    private static final Logger logger = LogManager.getLogger(BlogController.class);
+
     private final BlogService blogService;
 
     //authenticated users can create blogs
@@ -41,7 +45,9 @@ public class BlogController {
     //Users can add blog with tagNames
     @PostMapping
     public ResponseEntity<BlogDto> createBlog(@RequestBody BlogCreationRequest blogCreationRequest) {
+        logger.info("User with id '{}' is creating a new blog", blogCreationRequest.getUserId());
         return new ResponseEntity<>(blogService.createBlog(blogCreationRequest), HttpStatus.CREATED);
+
     }
 
     @Operation(
@@ -55,6 +61,7 @@ public class BlogController {
     //users can get all the blogs
     @GetMapping
     public ResponseEntity<List<BlogDto>> getAllBlogs(){
+        logger.info("Getting all blogs");
         return new ResponseEntity<>(blogService.getAllBlogs(),HttpStatus.OK);
     }
 
@@ -84,6 +91,7 @@ public class BlogController {
     @PutMapping("/{blogId}")
     public ResponseEntity<BlogDto> updateBlog(@PathVariable Long blogId,
                                               @RequestBody BlogUpdateRequest blogUpdateRequest){
+        logger.info("Blog with id '{}' is updating", blogId);
         return new ResponseEntity<>(blogService.updateBlog(blogId, blogUpdateRequest), HttpStatus.OK);
     }
 
@@ -98,6 +106,7 @@ public class BlogController {
     //users can add new tag to existing blogs
     @PutMapping("/{blogId}/tags")
     public ResponseEntity<BlogDto> addTagToBlog(@PathVariable Long blogId, @RequestBody TagAddRequest tagAddRequest){
+        logger.info("Adding new tag to blog with id '{}'", blogId);
         return new ResponseEntity<>(blogService.addTag(blogId, tagAddRequest), HttpStatus.OK);
     }
 
@@ -112,6 +121,7 @@ public class BlogController {
     //users can remove any tag from specific blog
     @DeleteMapping("/{blogId}/tags/{tagId}")
     public ResponseEntity<BlogDto> deleteTagFromBlog(@PathVariable Long blogId, @PathVariable Long tagId){
+        logger.info("Deleting tag with id '{}' from blog with id '{}'",tagId, blogId);
         return new ResponseEntity<>(blogService.removeTag(blogId, tagId), HttpStatus.OK);
     }
 
@@ -126,6 +136,7 @@ public class BlogController {
     //users can get all blogs by specific tagName
     @GetMapping("/tagName/{tagName}")
     public ResponseEntity<List<BlogDto>> getAllBlogsByTagName(@PathVariable String tagName){
+        logger.info("Getting all blogs by tag name '{}'", tagName);
         return new ResponseEntity<>(blogService.getBlogsByTagName(tagName),HttpStatus.OK);
     }
 
@@ -140,6 +151,7 @@ public class BlogController {
     )
     @GetMapping("/simplified")
     public ResponseEntity<List<SimplifiedBlogResponse>> getSimplifiedBlogs(){
+        logger.info("Getting simplified blogs");
         return new ResponseEntity<>(blogService.getSimplifiedBlogs(),HttpStatus.OK);
     }
 
@@ -154,7 +166,9 @@ public class BlogController {
     //authenticated users can remove own blogs
     @DeleteMapping("/{blogId}/users/{username}")
     public ResponseEntity<Void> deleteUserBlogByUsername(@PathVariable Long blogId, @PathVariable String  username) {
+        logger.info("Deleting blog with id '{}'",blogId);
         blogService.deleteUserBlogByUsername(blogId, username);
+        logger.info("Blog with id '{}' deleted", blogId);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
