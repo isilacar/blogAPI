@@ -76,7 +76,6 @@ public class BlogController {
     //authenticated users can get other users blogs
     @GetMapping("/users/{username}")
     public ResponseEntity<UserBlogResponse> getUserBlogs(@PathVariable String username) {
-        logger.info("Getting blogs for user '{}'", username);
         return new ResponseEntity<>(blogService.getUserBlogs(username), HttpStatus.OK);
     }
 
@@ -167,7 +166,7 @@ public class BlogController {
     //authenticated users can remove own blogs
     @DeleteMapping("/{blogId}/users/{username}")
     public ResponseEntity<Void> deleteUserBlogByUsername(@PathVariable Long blogId, @PathVariable String  username) {
-        logger.info("Deleting blog with id '{}' which belongs to user '{}'",blogId, username);
+        logger.info("Deleting blog with id '{}'",blogId);
         blogService.deleteUserBlogByUsername(blogId, username);
         logger.info("Blog with id '{}' deleted", blogId);
         return new ResponseEntity<>(HttpStatus.OK);

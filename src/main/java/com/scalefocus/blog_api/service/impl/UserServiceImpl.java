@@ -50,9 +50,9 @@ public class UserServiceImpl implements UserService {
 
         User savedUser = userRepository.save(user);
         String jwtToken = jwtTokenProvider.generateToken(user);
-        logger.info("Token generated successfully");
+        logger.info("Token generated successfully for the user whose id is {}", savedUser.getId());
         saveToken(savedUser, jwtToken);
-        logger.info("User '{}' registered successfully", user.getUsername());
+        logger.info("User with user id'{}' registered successfully", savedUser.getId());
         return new TokenResponse(jwtToken);
     }
 
@@ -66,13 +66,13 @@ public class UserServiceImpl implements UserService {
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
         User user = userRepository.findByUsername(authenticationRequest.getUsername()).get();
-        logger.info("Authenticated username '{}'",user.getUsername());
+        logger.info("Authenticated user id '{}'",user.getId());
         String token = jwtTokenProvider.generateToken(user);
-        logger.info("Token generated successfully for user '{}' ", user.getUsername());
+        logger.info("Token generated successfully for user with id '{}' ", user.getId());
         setExpiredAllUserTokens(user);
         saveToken(user, token);
-        logger.info("Token saved successfully for user '{}'", user.getUsername());
-        logger.info("User '{}' login successfully", user.getUsername());
+        logger.info("Token saved successfully for user with id '{}'", user.getId());
+        logger.info("User with id '{}' login successfully", user.getId());
         return new TokenResponse(token);
     }
 

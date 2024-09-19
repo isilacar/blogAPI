@@ -28,7 +28,7 @@ public class CustomUserDetailsService implements UserDetailsService {
                     return new UsernameNotFoundException("User not exist with username: " + username);
                 });
 
-        logger.info("Authenticated User '{}' has found", username);
+        logger.info("Authenticated User id '{}' has found", user.getId());
         return new org.springframework.security.core.userdetails.User(
                 user.getUsername(),
                 user.getPassword(),

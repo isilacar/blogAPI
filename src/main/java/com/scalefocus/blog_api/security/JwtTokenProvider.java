@@ -31,7 +31,7 @@ public class JwtTokenProvider {
     private long jwtExpirationMilliseconds;
 
     public String generateToken(User user) {
-        logger.info("Generating token for user '{}'", user.getUsername());
+        logger.info("Generating token for user with id '{}'", user.getId());
         String username = user.getUsername();
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + jwtExpirationMilliseconds);

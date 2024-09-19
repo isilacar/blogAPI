@@ -46,7 +46,7 @@ public class BlogServiceImpl implements BlogService {
         logger.info("User with id '{}' has founded", blogCreationRequest.getUserId());
         Blog blog = blogMapper.getBlog(blogCreationRequest, user);
         Blog savedBlog = blogRepository.save(blog);
-        logger.info("Blog has created successfully by the user '{}'", user.getUsername());
+        logger.info("Blog has created successfully by the user id '{}'", user.getId());
         return blogMapper.mapToBlogDto(savedBlog);
     }
 
@@ -134,7 +134,7 @@ public class BlogServiceImpl implements BlogService {
                     return new ResourceNotFound("User not found with name: " + username);
                 });
 
-        logger.info("User has found with username '{}'", username);
+        logger.info("User has found with user id '{}'", user.getId());
         Blog blog = user.getBlogList().stream().filter(b -> b.getId().equals(blogId)).findFirst()
                 .orElseThrow(() -> {
                     logger.error("Blog does not found with id '{}'", blogId);
@@ -144,7 +144,7 @@ public class BlogServiceImpl implements BlogService {
         user.getBlogList().remove(blog);
         userRepository.save(user);
         blogRepository.delete(blog);
-        logger.info("Blog with id '{}' has deleted successfully which belongs to user with name '{}'", blogId, username);
+        logger.info("Blog with id '{}' has deleted successfully which belongs to user with id '{}'", blogId, user.getId());
     }
 
     public UserBlogResponse getUserBlogs(String username) {
@@ -152,14 +152,14 @@ public class BlogServiceImpl implements BlogService {
             logger.error("User with username '{}' does not exist", username);
             return new ResourceNotFound("User Not Found with name: " + username);
         });
-        logger.info("User has found with username '{}'", username);
+        logger.info("User has found with user id '{}'", user.getId());
         List<Blog> userBlogs = blogRepository.getBlogsByUserUsername(username);
         List<BlogResponse> blogResponseList = userBlogs.stream().map(blog -> new BlogResponse(blog.getTitle(), blog.getText())).toList();
 
         UserBlogResponse userBlogResponse = new UserBlogResponse();
         userBlogResponse.setDisplayName(user.getDisplayName());
         userBlogResponse.setBlogs(blogResponseList);
-        logger.info("Getting all user blogs which are belongs to user  '{}'", username);
+        logger.info("Getting all user blogs which are belongs to user id '{}'", user.getId());
         return userBlogResponse;
     }
 
