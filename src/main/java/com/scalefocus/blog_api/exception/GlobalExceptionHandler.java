@@ -40,6 +40,22 @@ public class GlobalExceptionHandler {
                 , webRequest.getDescription(false)), HttpStatus.BAD_REQUEST);
     }
 
+    @ExceptionHandler(TypeNotMatchedException.class)
+    public ResponseEntity<ErrorDetails> typeMissMatchedException(TypeNotMatchedException typeMismatchException, WebRequest webRequest) {
+        return new ResponseEntity<>(new ErrorDetails(getTime(),
+                "BAD_REQUEST",
+                typeMismatchException.getMessage(),
+                webRequest.getDescription(false)), HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(RuntimeException.class)
+    public ResponseEntity<ErrorDetails> generalRuntimeException(RuntimeException runtimeException, WebRequest webRequest) {
+        return new ResponseEntity<>(new ErrorDetails(getTime(),
+                "BAD_REQUEST",
+                runtimeException.getMessage(),
+                webRequest.getDescription(false)), HttpStatus.BAD_REQUEST);
+    }
+
     private String getTime() {
         LocalDateTime now = LocalDateTime.now();
         DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
