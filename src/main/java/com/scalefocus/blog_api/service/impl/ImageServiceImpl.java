@@ -6,6 +6,7 @@ import com.scalefocus.blog_api.entity.User;
 import com.scalefocus.blog_api.exception.ResourceNotFound;
 import com.scalefocus.blog_api.exception.TypeNotMatchedException;
 import com.scalefocus.blog_api.repository.ImageRepository;
+import com.scalefocus.blog_api.response.ImageResourceResponse;
 import com.scalefocus.blog_api.service.ImageService;
 import com.scalefocus.blog_api.utils.BlogUtil;
 import com.scalefocus.blog_api.utils.SecurityUtil;
@@ -13,6 +14,8 @@ import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -110,6 +113,29 @@ public class ImageServiceImpl implements ImageService {
             throw new ResourceNotFound("File url path does not exist: " + filepath);
         }
     }
+
+    /**
+     * Retrieves existing image
+     *
+     * @param imageId the image id which is existing in image database
+     * @return image itself
+     */
+    @Override
+    public ImageResourceResponse getImage(Long imageId) {
+        try {
+            Image foundImage = imageRepository.findById(imageId)
+                    .orElseThrow(() -> new ResourceNotFound("image: " + imageId + " is not exist"));
+            Path filePath = Paths.get(foundImage.getFilePath()).normalize();
+            Resource resource = new UrlResource(filePath.toUri());
+            if (!resource.exists() || !resource.isReadable()) {
+                throw new ResourceNotFound("File not found with imageId: " + imageId);
+            }
+            return new ImageResourceResponse(Files.probeContentType(filePath), resource);
+        } catch (IOException e) {
+            throw new RuntimeException("File url path is not valid");
+        }
+    }
+
 
     private BufferedImage getResizedImage(MultipartFile file, Integer imageWidth, Integer imageHeight) {
         try {
