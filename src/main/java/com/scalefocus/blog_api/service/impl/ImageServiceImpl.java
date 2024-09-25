@@ -3,6 +3,7 @@ package com.scalefocus.blog_api.service.impl;
 import com.scalefocus.blog_api.entity.Blog;
 import com.scalefocus.blog_api.entity.Image;
 import com.scalefocus.blog_api.entity.User;
+import com.scalefocus.blog_api.exception.ResourceNotFound;
 import com.scalefocus.blog_api.exception.TypeNotMatchedException;
 import com.scalefocus.blog_api.repository.ImageRepository;
 import com.scalefocus.blog_api.service.ImageService;
@@ -82,6 +83,32 @@ public class ImageServiceImpl implements ImageService {
 
         }
         return "Image file uploaded successfully: " + file.getOriginalFilename();
+    }
+
+    public void deleteImage(Long imageId, Long blogId) {
+        Optional<User> requestingUser = securityUtil.getRequestingUser();
+
+        blogUtils.checkUserHasSpecificBlog(blogId, requestingUser.get());
+
+        Image foundImage = imageRepository.findById(imageId)
+                .orElseThrow(() -> new ResourceNotFound("image with id: " + imageId + " is not exist"));
+
+        boolean doesImageHaveSpecificBlog = foundImage.getBlog().getId().equals(blogId);
+        if (!doesImageHaveSpecificBlog) {
+            throw new ResourceNotFound("image with id: " + imageId + " doesn't have specific blog with id: " + blogId);
+        }
+
+        Path filepath = Paths.get(foundImage.getFilePath()).normalize();
+        if (Files.exists(filepath)) {
+            imageRepository.delete(foundImage);
+            try {
+                Files.delete(filepath);
+            } catch (IOException e) {
+                throw new RuntimeException("Image with id:" + imageId + " cannot be deleted");
+            }
+        } else {
+            throw new ResourceNotFound("File url path does not exist: " + filepath);
+        }
     }
 
     private BufferedImage getResizedImage(MultipartFile file, Integer imageWidth, Integer imageHeight) {

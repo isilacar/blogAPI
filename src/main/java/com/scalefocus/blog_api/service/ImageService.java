@@ -6,4 +6,5 @@ public interface ImageService {
 
     String saveImage(MultipartFile multipartFile, Long blogId, Integer imageWidth, Integer imageHeight);
 
+    void deleteImage(Long imageId, Long blogId);
 }

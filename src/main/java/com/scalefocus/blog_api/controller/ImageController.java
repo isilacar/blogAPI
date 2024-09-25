@@ -7,10 +7,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 @Tag(
@@ -39,4 +36,19 @@ public class ImageController {
                                             @RequestParam Integer imageHeight) {
         return new ResponseEntity<>(imageService.saveImage(image, blogId, imageWidth, imageHeight), HttpStatus.CREATED);
     }
+
+    @Operation(
+            summary = "Delete Image REST API",
+            description = "Delete Image REST API is used to removing images from database and file"
+    )
+    @ApiResponse(
+            responseCode = "200",
+            description = "HTTP Status 200 OK"
+    )
+    @DeleteMapping("/{imageId}/{blogId}")
+    public ResponseEntity<Void> deleteImage(@PathVariable Long imageId, @PathVariable Long blogId) {
+        imageService.deleteImage(imageId, blogId);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
 }
