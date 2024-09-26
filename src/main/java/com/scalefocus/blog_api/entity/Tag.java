@@ -1,5 +1,6 @@
 package com.scalefocus.blog_api.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
 import lombok.*;
@@ -34,5 +35,6 @@ public class Tag {
             description = "Tags Related With Blogs"
     )
     @ManyToMany(mappedBy = "tags")
+    @JsonIgnore
     private Set<Blog> blogs = new HashSet<>();
 }
