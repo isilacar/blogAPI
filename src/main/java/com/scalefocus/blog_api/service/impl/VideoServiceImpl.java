@@ -6,6 +6,7 @@ import com.scalefocus.blog_api.entity.Video;
 import com.scalefocus.blog_api.exception.ResourceNotFound;
 import com.scalefocus.blog_api.exception.TypeNotMatchedException;
 import com.scalefocus.blog_api.repository.VideoRepository;
+import com.scalefocus.blog_api.response.VideoResourceResponse;
 import com.scalefocus.blog_api.service.VideoService;
 import com.scalefocus.blog_api.utils.BlogUtil;
 import com.scalefocus.blog_api.utils.SecurityUtil;
@@ -14,6 +15,8 @@ import io.github.techgnious.dto.ResizeResolution;
 import io.github.techgnious.dto.VideoFormats;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -97,6 +100,20 @@ public class VideoServiceImpl implements VideoService {
             }
         } else {
             throw new ResourceNotFound("File url path does not exist: " + filepath);
+        }
+    }
+
+    public VideoResourceResponse getVideo(Long videoId) {
+        try {
+            Video foundVideo = videoRepository.findById(videoId).orElseThrow(() -> new ResourceNotFound("video with id: " + videoId + " is not exist"));
+            Path filePath = Paths.get(foundVideo.getFilePath()).normalize();
+            Resource resource = new UrlResource(filePath.toUri());
+            if (!resource.exists() || !resource.isReadable()) {
+                throw new ResourceNotFound("Video not found with id: " + videoId);
+            }
+            return new VideoResourceResponse(Files.probeContentType(filePath), resource);
+        } catch (IOException e) {
+            throw new RuntimeException("File url path is not valid");
         }
     }
 
