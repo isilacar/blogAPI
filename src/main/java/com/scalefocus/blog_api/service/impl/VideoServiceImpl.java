@@ -3,6 +3,7 @@ package com.scalefocus.blog_api.service.impl;
 import com.scalefocus.blog_api.entity.Blog;
 import com.scalefocus.blog_api.entity.User;
 import com.scalefocus.blog_api.entity.Video;
+import com.scalefocus.blog_api.exception.ResourceNotFound;
 import com.scalefocus.blog_api.exception.TypeNotMatchedException;
 import com.scalefocus.blog_api.repository.VideoRepository;
 import com.scalefocus.blog_api.service.VideoService;
@@ -17,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -71,6 +73,31 @@ public class VideoServiceImpl implements VideoService {
         }
 
         return "Video: " + file.getOriginalFilename()+" successfully saved";
+    }
+
+    public void deleteVideo(Long videoId, Long blogId) {
+        Optional<User> requestingUser = securityUtil.getRequestingUser();
+
+        Video foundVideo = videoRepository.findById(videoId)
+                .orElseThrow(() -> new ResourceNotFound("video with id: " + videoId + " is not exist"));
+        boolean doesVideoHaveSpecificBlog = foundVideo.getBlog().getId().equals(blogId);
+        if (!doesVideoHaveSpecificBlog) {
+            throw new ResourceNotFound("video with id: " + videoId + " doesn't have specific blog with id: " + blogId);
+        }
+
+        blogUtils.checkUserHasSpecificBlog(blogId, requestingUser.get());
+
+        Path filepath = Paths.get(foundVideo.getFilePath()).normalize();
+        if (Files.exists(filepath)) {
+            videoRepository.deleteById(videoId);
+            try {
+                Files.delete(filepath);
+            } catch (IOException e) {
+                throw new RuntimeException("Video with id:" + videoId + " cannot be deleted");
+            }
+        } else {
+            throw new ResourceNotFound("File url path does not exist: " + filepath);
+        }
     }
 
     /**

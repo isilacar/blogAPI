@@ -5,10 +5,9 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 @Tag(
@@ -24,7 +23,7 @@ public class VideoController {
 
     @Operation(
             summary = "Create Video REST API",
-            description = "Create Video REST API is used to save video in a database with file path url"
+            description = "Create Video REST API is used to save video in a database"
     )
     @ApiResponse(
             responseCode = "201",
@@ -39,4 +38,17 @@ public class VideoController {
         return videoService.createVideo(file, blogId, resolutionWidth, resolutionHeight);
     }
 
+    @Operation(
+            summary = "Delete Video REST API",
+            description = "Delete Video REST API is used to save user in a database"
+    )
+    @ApiResponse(
+            responseCode = "200",
+            description = "HTTP Status 200 OK"
+    )
+    @DeleteMapping("/{videoId}/{blogId}")
+    public ResponseEntity<Void> deleteVideo(@PathVariable Long videoId, @PathVariable Long blogId) {
+        videoService.deleteVideo(videoId, blogId);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
 }
