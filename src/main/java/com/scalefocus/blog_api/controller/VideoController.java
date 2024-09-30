@@ -33,12 +33,12 @@ public class VideoController {
             description = "HTTP Status 201 CREATED"
     )
     @PostMapping
-    public String createVideo(@RequestParam("video") MultipartFile file,
+    public ResponseEntity<String> createVideo(@RequestParam("video") MultipartFile file,
                               @RequestParam Long blogId,
                               @RequestParam Integer resolutionWidth,
                               @RequestParam Integer resolutionHeight) {
 
-        return videoService.createVideo(file, blogId, resolutionWidth, resolutionHeight);
+        return new ResponseEntity<>( videoService.createVideo(file, blogId, resolutionWidth, resolutionHeight),HttpStatus.CREATED);
     }
 
     @Operation(
