@@ -5,6 +5,9 @@ import com.scalefocus.blog_api.dto.TagDto;
 import com.scalefocus.blog_api.entity.Tag;
 import com.scalefocus.blog_api.entity.Token;
 import com.scalefocus.blog_api.entity.User;
+import com.scalefocus.blog_api.repository.BlogRepository;
+import com.scalefocus.blog_api.repository.TokenRepository;
+import com.scalefocus.blog_api.repository.UserRepository;
 import com.scalefocus.blog_api.request.*;
 import com.scalefocus.blog_api.response.SimplifiedBlogResponse;
 import com.scalefocus.blog_api.response.TokenResponse;
@@ -35,7 +38,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @TestPropertySource("classpath:application-test.properties")
-class BlogApiApplicationTests {
+class BlogApiApplicationTests extends AbstractMysqlContainer {
 
     public static final String SECRET_KEY = "f07afe0e45657f1df3d7cf9141c39185527363b9e7b47225af954d6ed6a801db";
 
@@ -46,13 +49,13 @@ class BlogApiApplicationTests {
     private String jwtToken;
 
     @Autowired
-    private BlogTestH2Repository blogTestH2Repository;
+    private BlogRepository blogRepository;
 
     @Autowired
-    private UserTestH2Repository userTestH2Repository;
+    private UserRepository userRepository;
 
     @Autowired
-    private TokenTestH2Repository tokenTestH2Repository;
+    private TokenRepository tokenRepository;
 
     private static TestRestTemplate restTemplate;
     private User user;
@@ -70,7 +73,7 @@ class BlogApiApplicationTests {
     @BeforeEach
     public void setUp() {
         baseUrl = "http://localhost:" + portNumber + "/api";
-        user = userTestH2Repository.findById(3L).get();
+        user = userRepository.findById(3L).get();
         Authentication authentication = new UsernamePasswordAuthenticationToken(user, null, Collections.emptyList());
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
@@ -80,7 +83,7 @@ class BlogApiApplicationTests {
         token.setExpired(false);
         token.setToken(jwtToken);
 
-        tokenTestH2Repository.save(token);
+        tokenRepository.save(token);
 
         headers = new HttpHeaders();
         headers.add("Authorization", "Bearer " + token.getToken());
@@ -88,7 +91,7 @@ class BlogApiApplicationTests {
 
     @AfterEach
     public void tearDown() {
-        tokenTestH2Repository.deleteAll();
+        tokenRepository.deleteAll();
     }
 
     @Test
@@ -108,14 +111,14 @@ class BlogApiApplicationTests {
         BlogCreationRequest blogCreationRequest = BlogCreationRequest.builder()
                 .title(blogDto.title())
                 .text(blogDto.text())
-                .userId(userTestH2Repository.findById(3L).get().getId())
+                .userId(userRepository.findById(3L).get().getId())
                 .tags(tagDtoSet.stream().map(t -> new Tag()).collect(Collectors.toSet()))
                 .build();
 
         BlogDto savedBlogDto = restTemplate.exchange(addingBlogUrl, HttpMethod.POST, new HttpEntity<>(blogCreationRequest, headers), BlogDto.class).getBody();
 
         assertEquals("integration title", savedBlogDto.title());
-        assertThat(blogTestH2Repository.findAll().size()).isGreaterThanOrEqualTo(1);
+        assertThat(blogRepository.findAll().size()).isGreaterThanOrEqualTo(1);
     }
 
     @Test
@@ -131,7 +134,7 @@ class BlogApiApplicationTests {
         ).getBody();
 
         assertThat(blogDtoListResponse.size()).isGreaterThanOrEqualTo(1);
-        assertThat(blogTestH2Repository.findAll().size()).isGreaterThanOrEqualTo(1);
+        assertThat(blogRepository.findAll().size()).isGreaterThanOrEqualTo(1);
 
     }
 
@@ -208,7 +211,7 @@ class BlogApiApplicationTests {
         ).getBody();
 
         assertThat(blogDtoListResponse.size()).isGreaterThanOrEqualTo(1);
-        assertThat(blogTestH2Repository.findAll().size()).isGreaterThanOrEqualTo(1);
+        assertThat(blogRepository.findAll().size()).isGreaterThanOrEqualTo(1);
 
     }
 
@@ -227,7 +230,7 @@ class BlogApiApplicationTests {
 
         assertNotNull(simplifiedBlogResponses);
         assertThat(simplifiedBlogResponses.size()).isGreaterThanOrEqualTo(1);
-        assertThat(blogTestH2Repository.findAll().size()).isGreaterThanOrEqualTo(1);
+        assertThat(blogRepository.findAll().size()).isGreaterThanOrEqualTo(1);
 
     }
 
@@ -283,4 +286,5 @@ class BlogApiApplicationTests {
                 .signWith(SignatureAlgorithm.HS256, SECRET_KEY)
                 .compact();
     }
+
 }
