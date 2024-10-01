@@ -12,7 +12,6 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.*;
-import org.springframework.core.io.Resource;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.web.multipart.MultipartFile;
@@ -56,12 +55,10 @@ public class ImageServiceImplTest {
     private User user;
     private Blog blog;
     private MultipartFile multipartFile;
-    // private ImageResourceResponse imageResourceResponse;
     private Image image;
     private MockedStatic<ImageIO> imageIOMocked;
     private MockedStatic<Paths> pathsMocked;
     private Path directory;
-    private Resource resource;
 
     @BeforeEach
     public void setUp() throws IOException {
@@ -85,10 +82,8 @@ public class ImageServiceImplTest {
         image = new Image(1L, blog, multipartFile.getOriginalFilename(), multipartFile.getContentType(), directory + "/" + multipartFile.getOriginalFilename());
         imageIOMocked = Mockito.mockStatic(ImageIO.class);
         pathsMocked = Mockito.mockStatic(Paths.class);
-        //   resource=new UrlResource(directory.toUri().normalize());
 
         doReturn(Optional.of(user)).when(securityUtil).getRequestingUser();
-        doReturn(Optional.of(blog)).when(imageRepository).findById(anyLong());
         when(Paths.get(anyString())).thenReturn(directory);
         doReturn(blog).when(blogUtils).checkUserHasSpecificBlog(anyLong(), any(User.class));
 
@@ -108,12 +103,8 @@ public class ImageServiceImplTest {
 
     @Test
     public void testGettingImage() throws IOException {
-        // directory=Path.of(image.getFilePath()).normalize();
         Path testPath = directory.resolve("test.jpeg");
         Files.createFile(testPath);
-
-        //resource=new UrlResource(testPath.toUri());
-        // imageResourceResponse = new ImageResourceResponse(multipartFile.getContentType(),resource);
 
         when(Paths.get(anyString())).thenReturn(testPath);
 
