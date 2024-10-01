@@ -53,7 +53,6 @@ public class VideoServiceImplTest {
     private Video video;
     private MockedStatic<Paths> pathsMocked;
     private Path directory;
-    //private Resource resource;
 
     @BeforeEach
     public void setUp() throws IOException, VideoException {
@@ -103,7 +102,7 @@ public class VideoServiceImplTest {
     }
 
     @Test
-    public void testGettingVideo_throwException_whenVideoDoesNotExist() throws IOException {
+    public void testGettingVideo_throwException_whenVideoDoesNotExist() {
         doReturn(Optional.empty()).when(videoRepository).findById(anyLong());
         ResourceNotFound imageIdNotFound = assertThrows(ResourceNotFound.class, () -> videoServiceImpl.getVideo(1L), "Video id does not exist");
 
@@ -111,7 +110,7 @@ public class VideoServiceImplTest {
     }
 
     @Test
-    public void testGettingVideo_throwException_whenResourceNotAvailable() throws IOException {
+    public void testGettingVideo_throwException_whenResourceNotAvailable() {
         ResourceNotFound fileNotFound = assertThrows(ResourceNotFound.class, () -> videoServiceImpl.getVideo(1L), "File not found");
 
         assertEquals(FILE_NOT_FOUND, fileNotFound.getMessage());
