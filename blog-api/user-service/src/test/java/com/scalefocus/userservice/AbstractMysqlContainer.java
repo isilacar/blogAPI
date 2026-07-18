@@ -5,13 +5,13 @@ import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.containers.MySQLContainer;
 
-@Ignore
+
 public abstract class AbstractMysqlContainer {
 
     private static final MySQLContainer MY_SQL_CONTAINER;
 
     static {
-        MY_SQL_CONTAINER = new MySQLContainer("mysql:latest")
+        MY_SQL_CONTAINER = new MySQLContainer("mysql:8.4")
                 .withDatabaseName("userdb")
                 .withUsername("isil")
                 .withPassword("123456");

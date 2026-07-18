@@ -8,6 +8,7 @@ import com.scalefocus.userservice.repository.UserRepository;
 import com.scalefocus.userservice.request.AuthenticationRequest;
 import com.scalefocus.userservice.request.RegisterRequest;
 import com.scalefocus.userservice.response.TokenResponse;
+import com.scalefocus.userservice.security.JwtTokenProvider;
 import com.scalefocus.userservice.service.impl.UserServiceImpl;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -23,7 +24,7 @@ import org.springframework.http.*;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.ActiveProfiles;
 
 import java.util.Collections;
 import java.util.Date;
@@ -33,16 +34,13 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@TestPropertySource("classpath:application-test.properties")
+@ActiveProfiles("test")
 class UserServiceApplicationTests extends AbstractMysqlContainer {
-
-    public static final String SECRET_KEY = "f07afe0e45657f1df3d7cf9141c39185527363b9e7b47225af954d6ed6a801db";
 
     @LocalServerPort
     private int portNumber;
 
     private String baseUrl;
-    private String jwtToken;
     private HttpHeaders headers;
 
     @Autowired
@@ -51,17 +49,15 @@ class UserServiceApplicationTests extends AbstractMysqlContainer {
     @Autowired
     private TokenRepository tokenRepository;
 
-    private static TestRestTemplate testRestTemplate;
+    @Autowired
+    private JwtTokenProvider jwtTokenProvider;
+
+    @Autowired
+    private TestRestTemplate testRestTemplate;
     private User user;
 
     @Autowired
     private UserServiceImpl userServiceImpl;
-
-    @BeforeAll
-    public static void init() {
-        testRestTemplate = new TestRestTemplate();
-
-    }
 
     @BeforeEach
     public void setUp() {
@@ -71,7 +67,7 @@ class UserServiceApplicationTests extends AbstractMysqlContainer {
         Authentication authentication = new UsernamePasswordAuthenticationToken(user, null, Collections.emptyList());
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        jwtToken = generateToken(user.getUsername());
+        String jwtToken = jwtTokenProvider.generateToken(user);
         Token token = new Token();
         token.setUser(user);
         token.setExpired(false);
@@ -142,14 +138,4 @@ class UserServiceApplicationTests extends AbstractMysqlContainer {
         assertEquals(foundedUser.getStatusCode(), HttpStatus.valueOf(200));
 
     }
-
-    private static String generateToken(String username) {
-        return Jwts.builder()
-                .setSubject(username)
-                .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + 2073600000))
-                .signWith(SignatureAlgorithm.HS256, SECRET_KEY)
-                .compact();
-    }
-
 }
