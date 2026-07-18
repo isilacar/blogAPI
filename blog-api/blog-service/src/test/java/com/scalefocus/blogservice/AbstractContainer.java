@@ -8,14 +8,14 @@ import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.elasticsearch.ElasticsearchContainer;
 import org.testcontainers.utility.DockerImageName;
 
-public abstract class AbstractMysqlContainer {
+public abstract class AbstractContainer {
 
     private static final MySQLContainer MY_SQL_CONTAINER;
     private static final KafkaContainer KAFKA_CONTAINER;
     private static final ElasticsearchContainer ELASTICSEARCH_CONTAINER;
 
     static {
-        MY_SQL_CONTAINER = new MySQLContainer("mysql:latest")
+        MY_SQL_CONTAINER = new MySQLContainer("mysql:8.4")
                 .withDatabaseName("blogdb")
                 .withUsername("isil")
                 .withPassword("123456");

@@ -14,7 +14,6 @@ import com.scalefocus.blogservice.request.TagAddRequest;
 import com.scalefocus.blogservice.response.SimplifiedBlogResponsePagination;
 import com.scalefocus.blogservice.response.UserBlogResponse;
 import com.scalefocus.blogservice.utils.UserClientUtil;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,7 +27,7 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.ActiveProfiles;
 
 import java.util.HashSet;
 import java.util.List;
@@ -42,8 +41,8 @@ import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@TestPropertySource("classpath:application-test.properties")
-class BlogServiceApplicationTests extends AbstractMysqlContainer {
+@ActiveProfiles("test")
+class BlogServiceApplicationTests extends AbstractContainer {
 
     @LocalServerPort
     private int portNumber;
@@ -62,16 +61,13 @@ class BlogServiceApplicationTests extends AbstractMysqlContainer {
     @MockBean
     private KafkaElasticBlogProducer kafkaElasticBlogProducer;
 
-    private static TestRestTemplate testRestTemplate;
+    @Autowired
+    private TestRestTemplate testRestTemplate;
+
     private Long userId;
 
     private UserClientDto userClientDto;
 
-    @BeforeAll
-    public static void init() {
-        testRestTemplate = new TestRestTemplate();
-
-    }
 
     @BeforeEach
     public void setUp() {
